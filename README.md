@@ -450,7 +450,7 @@ auth_uri = http://192.168.57.102:5000/v2.0
 auth_type = password
 project_name=services
 username=glance
-password=c3a91427151f403e
+password=rootroot
 auth_url=http://192.168.57.102:35357
 
 [oslo_policy]
@@ -479,7 +479,7 @@ auth_uri = http://192.168.57.102:5000/v2.0
 auth_type = password
 username=glance
 project_name=services
-password=c3a91427151f403e
+password=rootroot
 auth_url=http://192.168.57.102:35357
 
 [oslo_policy]
