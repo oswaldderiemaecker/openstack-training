@@ -284,17 +284,17 @@ su -s /bin/sh -c "keystone-manage db_sync" keystone
 Initialize Fernet key repositories:
 
 ```bash
-keystone-manage fernet_setup –keystone-user keystone –keystone-group keystone
-keystone-manage credential_setup –keystone-user keystone –keystone-group keystone
+keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
 ```
 
 Bootstrap the Identity service:
 
 ```bash
-keystone-manage bootstrap –bootstrap-password rootroot –bootstrap-admin-url http://controller:35357/v3/ \
-                          –bootstrap-internal-url http://controller:35357/v3/ \
-                          –bootstrap-public-url http://controller:5000/v3/ \
-                          –bootstrap-region-id RegionOne
+keystone-manage bootstrap --bootstrap-password rootroot –bootstrap-admin-url http://controller:35357/v3/ \
+                          --bootstrap-internal-url http://controller:35357/v3/ \
+                          --bootstrap-public-url http://controller:5000/v3/ \
+                          --bootstrap-region-id RegionOne
 ```
 
 Configure the Apache HTTP server:
@@ -326,19 +326,19 @@ export OS_REGION_NAME=RegionOne
 Create the service project:
 
 ```bash
-openstack project create –domain default –description "Service Project" service
+openstack project create --domain default --description "Service Project" service
 ```
 
 Create the demo project:
 
 ```bash
-openstack project create –domain default –description "Demo Project" demo
+openstack project create --domain default --description "Demo Project" demo
 ```
 
 Create the demo user:
 
 ```bash
-openstack user create –domain default –password-prompt demo
+openstack user create --domain default --password-prompt demo
 ```
 
 Create the user role:
@@ -350,7 +350,7 @@ openstack role create user
 Add the user role to the demo project and user:
 
 ```bash
-openstack role add –project demo –user demo user
+openstack role add --project demo --user demo user
 ```
 
 12) Verify operation of the Identity service
@@ -368,11 +368,11 @@ unset OS_AUTH_URL OS_PASSWORD
 As the admin user, request an authentication token:
 
 ```bash
-openstack –os-auth-url http://controller:35357/v3 –os-project-domain-name Default –os-user-domain-name Default –os-project-name admin –os-username admin token issue
+openstack --os-auth-url http://controller:35357/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name admin --os-username admin token issue
 ```
 
 As the demo user, request an authentication token:
 
 ```bash
-openstack –os-auth-url http://controller:5000/v3 –os-project-domain-name Default –os-user-domain-name Default –os-project-name demo –os-username demo token issue
+openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name demo --os-username demo token issue
 ```
