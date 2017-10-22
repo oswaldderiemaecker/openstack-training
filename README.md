@@ -291,7 +291,7 @@ keystone-manage credential_setup --keystone-user keystone --keystone-group keyst
 Bootstrap the Identity service:
 
 ```bash
-keystone-manage bootstrap --bootstrap-password rootroot –bootstrap-admin-url http://controller:35357/v3/ \
+keystone-manage bootstrap --bootstrap-password rootroot --bootstrap-admin-url http://controller:35357/v3/ \
                           --bootstrap-internal-url http://controller:35357/v3/ \
                           --bootstrap-public-url http://controller:5000/v3/ \
                           --bootstrap-region-id RegionOne
@@ -375,4 +375,148 @@ As the demo user, request an authentication token:
 
 ```bash
 openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name demo --os-username demo token issue
+```
+
+12) Image (glance) service install and configure
+
+Use the database access client to connect to the database server as the root user:
+
+```bash
+mysql -u root -p
+```
+
+```
+CREATE DATABASE glance;
+GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'localhost' IDENTIFIED BY 'rootroot';
+GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' IDENTIFIED BY 'rootroot';
+```
+
+Create the glance user:
+
+```bash
+openstack user create --domain default --password-prompt glance
+```
+
+Add the admin role to the glance user and service project:
+
+```bash
+openstack role add --project service --user glance admin
+```
+
+Create the glance service entity:
+
+```bash
+openstack service create --name glance --description "OpenStack Image" image
+```
+
+Create the Image service API endpoints:
+
+```bash
+openstack endpoint create --region RegionOne image public http://controller:9292
+openstack endpoint create --region RegionOne image internal http://controller:9292
+openstack endpoint create --region RegionOne image admin http://controller:9292
+```
+
+Install the packages:
+
+```bash
+yum install openstack-glance
+```
+
+Edit the /etc/glance/glance-api.conf file and complete the following actions:
+
+```
+[DEFAULT]
+bind_host = 0.0.0.0
+bind_port = 9292
+workers = 2
+image_cache_dir = /var/lib/glance/image-cache
+registry_host = 0.0.0.0
+debug = False
+log_file = /var/log/glance/api.log
+log_dir = /var/log/glance
+
+[database]
+connection = mysql+pymysql://glance:glance@10.0.2.15/glance
+
+[glance_store]
+stores = file,http,swift
+default_store = file
+filesystem_store_datadir = /var/lib/glance/images/
+os_region_name=RegionOne
+
+[keystone_authtoken]
+auth_uri = http://192.168.57.102:5000/v2.0
+auth_type = password
+project_name=services
+username=glance
+password=c3a91427151f403e
+auth_url=http://192.168.57.102:35357
+
+[oslo_policy]
+policy_file = /etc/glance/policy.json
+
+[paste_deploy]
+flavor = keystone
+```
+
+Edit the /etc/glance/glance-registry.conf file and complete the following actions:
+
+```
+[DEFAULT]
+bind_host = 0.0.0.0
+bind_port = 9191
+workers = 2
+debug = False
+log_file = /var/log/glance/registry.log
+log_dir = /var/log/glance
+
+[database]
+connection = mysql+pymysql://glance:rootroot@10.0.2.15/glance
+
+[keystone_authtoken]
+auth_uri = http://192.168.57.102:5000/v2.0
+auth_type = password
+username=glance
+project_name=services
+password=c3a91427151f403e
+auth_url=http://192.168.57.102:35357
+
+[oslo_policy]
+policy_file = /etc/glance/policy.json
+
+[paste_deploy]
+flavor = keystone
+```
+
+Create the image cache folder:
+
+```bash
+mkdir /var/lib/glance/image-cache
+```
+
+Populate the Image service database:
+
+su -s /bin/sh -c "glance-manage db_sync" glance
+
+Start the Image services and configure them to start when the system boots:
+
+```bash
+systemctl enable openstack-glance-api.service openstack-glance-registry.service
+systemctl start openstack-glance-api.service openstack-glance-registry.service
+```
+
+Now download the cirros source image:
+
+```bash
+sudo yum -y install wget
+wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
+wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
+```
+
+Upload the image to the Image service using the QCOW2 disk format, bare container format, and public visibility so all projects can access it:
+
+```bash
+openstack image create “cirros” –file cirros-0.3.4-x86_64-disk.img –disk-format qcow2 –container-format bare –public
+openstack image create “CentOS-7” –file CentOS-7-x86_64-GenericCloud.qcow2 –disk-format qcow2 –container-format bare –public
 ```
