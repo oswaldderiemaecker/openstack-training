@@ -463,7 +463,7 @@ flavor = keystone
 Create the image cache folder:
 
 ```bash
-mkdir /var/lib/glance/image-cache
+mkdir /var/lib/glance/images/
 ```
 
 Populate the Image service database:
@@ -491,3 +491,37 @@ Upload the image to the Image service using the QCOW2 disk format, bare containe
 openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public
 openstack image create "CentOS-7" --file CentOS-7-x86_64-GenericCloud.qcow2 --disk-format qcow2 --container-format bare --public
 ```
+
+Confirm upload of the image and validate attributes:
+
+```bash
+openstack image list
+```
+
+13) Compute (nova) service install and configure on Controller node
+
+Before you install and configure the Compute service, you must create databases, service credentials, 
+and API endpoints.
+
+Use the database access client to connect to the database server as the root user:
+
+```bash
+mysql -u root -p
+```
+
+Create the nova_api and nova databases:
+
+```bash
+CREATE DATABASE nova_api;
+CREATE DATABASE nova;
+```
+
+Grant proper access to the databases:
+
+```bash
+GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'localhost' IDENTIFIED BY 'rootroot';
+GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%' IDENTIFIED BY 'rootroot';
+GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'localhost' IDENTIFIED BY 'rootroot';
+GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%' IDENTIFIED BY 'rootroot';
+```
+
