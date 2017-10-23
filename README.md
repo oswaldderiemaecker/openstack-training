@@ -551,9 +551,9 @@ openstack service create --name nova --description "OpenStack Compute" compute
 Create the Compute service API endpoints:
 
 ```bash
-openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1/%(tenant_id)s
-openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1/%(tenant_id)s
-openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1/%(tenant_id)s
+openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1/%\(tenant_id\)s
 ```
 
 Install the packages:
@@ -562,3 +562,55 @@ Install the packages:
 yum install openstack-nova-api openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler
 ```
 
+Edit the /etc/nova/nova.conf file and complete the following actions:
+
+```bash
+[DEFAULT]
+enabled_apis = osapi_compute,metadata
+transport_url = rabbit://openstack:rootroot@10.0.2.15
+auth_strategy = keystone
+my_ip = 192.168.57.102
+use_neutron = True
+firewall_driver = nova.virt.firewall.NoopFirewallDriver
+
+[api_database]
+connection = mysql+pymysql://nova:rootroot@10.0.2.15/nova_api
+
+[database]
+connection = mysql+pymysql://nova:rootroot@10.0.2.15/nova
+
+[glance]
+api_servers = http://controller:9292
+
+[keystone_authtoken]
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = nova
+password = rootroot
+
+[oslo_concurrency]
+lock_path = /var/lib/nova/tmp
+
+[vnc]
+vncserver_listen = $my_ip
+vncserver_proxyclient_address = $my_ip
+```
+
+Populate the Compute databases:
+
+```bash
+su -s /bin/sh -c "nova-manage api_db sync" nova
+su -s /bin/sh -c "nova-manage db sync" nova
+```
+
+Start the Compute services and configure them to start when the system boots:
+
+```bash
+systemctl enable openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
+systemctl start openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
+```
