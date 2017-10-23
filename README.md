@@ -41,13 +41,13 @@ echo '192.168.57.102 controller.example.com controller
 192.168.57.101 network.example.com network' >> /etc/hosts
 ```
 
-3) Upgrade the OS and reboot:
+# 3) Upgrade the OS and reboot:
 
 ```bash
 yum update -y ; reboot
 ```
 
-4) Verify connectivity
+# 4) Verify connectivity
 
 On the controller Node:
 
@@ -73,7 +73,7 @@ ping -c 4 network
 ping -c 4 compute
 ```
 
-5) Create SSH Access:
+# 5) Create SSH Access:
 
 ```bash
 ssh-keygen
@@ -91,7 +91,7 @@ ssh root@compute.example.com
  ssh root@network.example.com
 ```
 
-6) Network Time Protocol (NTP) Setup
+# 6) Network Time Protocol (NTP) Setup
 
 On the Controller Node:
 
@@ -133,7 +133,7 @@ systemctl start chronyd.service
 
 Do the same on the Network Node.
 
-7) Set OpenStack Newton Repository
+# 7) Set OpenStack Newton Repository
 
 ```bash
 yum install centos-release-openstack-newton -y
@@ -142,7 +142,7 @@ yum install python-openstackclient
 yum install openstack-selinux
 ```
 
-8) Install MariaDB
+# 8) Install MariaDB
 
 On Controller node
 
@@ -175,7 +175,7 @@ Secure the database service by running the mysql_secure_installation script.
 mysql_secure_installation
 ```
 
-8) RabbitMQ message queue Setup
+# 9) RabbitMQ message queue Setup
 
 ```bash
 yum install rabbitmq-server
@@ -200,7 +200,7 @@ Permit configuration, write, and read access for the openstack user:
 rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 ```
 
-9) Memcached setup
+# 10) Memcached setup
 
 ```bash
 yum install memcached python-memcached
@@ -213,7 +213,7 @@ systemctl enable memcached.service
 systemctl start memcached.service
 ```
 
-10) Installing Keystone
+# 11) Installing Keystone
 
 Connect to mysql
 
@@ -301,7 +301,7 @@ export OS_AUTH_URL=http://controller:35357/v3
 export OS_IDENTITY_API_VERSION=3
 ```
 
-11) Create a domain, projects, users, and roles
+# 12) Create a domain, projects, users, and roles
 
 Set the environment:
 
@@ -339,7 +339,7 @@ Add the user role to the demo project and user:
 openstack role add --project demo --user demo user
 ```
 
-12) Verify operation of the Identity service
+# 13) Verify operation of the Identity service
 
 For security reasons, disable the temporary authentication token mechanism:
 
@@ -363,7 +363,7 @@ As the demo user, request an authentication token:
 openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name demo --os-username demo token issue
 ```
 
-12) Image (glance) service install and configure
+# 14) Image (glance) service install and configure
 
 Use the database access client to connect to the database server as the root user:
 
@@ -498,7 +498,7 @@ Confirm upload of the image and validate attributes:
 openstack image list
 ```
 
-13) Compute (nova) service install and configure on Controller node
+# 15) Compute (nova) service install and configure on Controller node
 
 Before you install and configure the Compute service, you must create databases, service credentials, 
 and API endpoints.
@@ -615,7 +615,7 @@ systemctl enable openstack-nova-api.service openstack-nova-consoleauth.service o
 systemctl start openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
 ```
 
-14) Compute (nova) service install and configure on Compute Node
+# 16) Compute (nova) service install and configure on Compute Node
 
 Set OpenStack Newton Repository on the Compute Node
 
@@ -684,7 +684,7 @@ On the Controller Node Verify operation of the Compute service:
 openstack compute service list
 ```
 
-15) Networking (neutron) service install and setup
+# 17) Networking (neutron) service install and setup
 
 On controller node
 
@@ -733,7 +733,7 @@ openstack endpoint create --region RegionOne network internal http://controller:
 openstack endpoint create --region RegionOne network admin http://controller:9696
 ```
 
-16) Configure the Networking Self-service networks
+# 18) Configure the Networking Self-service networks
 
 Install the components:
 
@@ -861,7 +861,7 @@ systemctl enable neutron-server.service neutron-linuxbridge-agent.service neutro
 systemctl start neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
 ```
 
-17) Configure Neutron on the Compute Node
+# 19) Configure Neutron on the Compute Node
 
 Install the components:
 
@@ -967,7 +967,7 @@ neutron router-create private-router
 neutron router-interface-add private-router private_subnet
 ```
 
-20) Dashboard install and configure
+# 20) Dashboard install and configure
 
 Install the packages:
 
@@ -1313,3 +1313,45 @@ REST_API_REQUIRED_SETTINGS = ['OPENSTACK_HYPERVISOR_FEATURES',
 openstack flavor create --ram 1024 --vcpus 1 --disk 1 --public t1.tiny
 
 systemctl restart neutron-server.service neutron-dhcp-agent.service neutron-metadata-agent.service neutron-l3-agent
+
+# 21) Restart everything
+
+On the Controller Node:
+
+```bash
+systemctl restart openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
+systemctl start neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
+systemctl start openstack-glance-api.service openstack-glance-registry.service
+systemctl restart httpd.service memcached.service
+```
+
+Verify all is running fine:
+
+```bash
+systemctl status openstack-nova-api.service
+systemctl status openstack-nova-consoleauth.service
+systemctl status openstack-nova-scheduler.service
+systemctl status openstack-nova-conductor.service
+systemctl status openstack-nova-novncproxy.service
+systemctl status neutron-server.service
+systemctl status neutron-dhcp-agent.service
+systemctl status neutron-metadata-agent.service
+systemctl status openstack-glance-api.service
+systemctl status openstack-glance-registry.service
+systemctl status httpd.service memcached.service
+
+On the Compute Node:
+
+```bash
+systemctl restart openvswitch.service
+systemctl restart neutron-openvswitch-agent.service
+systemctl restart neutron-ovs-cleanup.service
+```
+
+Verify all is running fine:
+
+```bash
+systemctl status openvswitch.service
+systemctl status neutron-openvswitch-agent.service
+systemctl status neutron-ovs-cleanup.service
+```
