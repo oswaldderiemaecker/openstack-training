@@ -1339,6 +1339,7 @@ systemctl status neutron-metadata-agent.service
 systemctl status openstack-glance-api.service
 systemctl status openstack-glance-registry.service
 systemctl status httpd.service memcached.service
+```
 
 On the Compute Node:
 
