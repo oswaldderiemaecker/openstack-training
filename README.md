@@ -1,10 +1,9 @@
 I am using the Mac for installation and have the VirtualBox installed.
 
-For the Newton openstack setup we must have the three virtual machine ready with atleast below requirement:
-  
+For the Newton openstack setup we must have the two virtual machine ready with atleast below requirement:
+
 * Controller Node: 2 processor, 4 GB memory, and 5 GB storage
-* Compute Node: 1 processor, 2 GB memory, and 10 GB storage
-* Network Node: 1 processor, 2 GB memory, and 5 GB storage
+* Compute Node: 2 processor, 4 GB memory, and 20 GB storage
 
 Each VM has a NAT Network and a Host-Only Adapter set to the same Adapter.
 
@@ -22,24 +21,14 @@ configuration.
 ```bash
 echo 'controller' > /etc/hostname
 echo '192.168.57.102 controller.example.com controller
-192.168.57.100 compute.example.com compute
-192.168.57.101 network.example.com network' >> /etc/hosts
-```
-
-**On the Network Node:**
-```bash
-echo 'network' > /etc/hostname
-echo '192.168.57.102 controller.example.com controller
-192.168.57.100 compute.example.com compute
-192.168.57.101 network.example.com network' >> /etc/hosts
+192.168.57.100 compute.example.com compute' >> /etc/hosts
 ```
 
 **On the Compute Node:**
 ```bash
 echo 'compute' > /etc/hostname
 echo '192.168.57.102 controller.example.com controller
-192.168.57.100 compute.example.com compute
-192.168.57.101 network.example.com network' >> /etc/hosts
+192.168.57.100 compute.example.com compute' >> /etc/hosts
 ```
 
 # 3) Upgrade the OS and reboot:
@@ -54,15 +43,6 @@ yum update -y ; reboot
 
 ```bash
 ping -c 4 controller
-ping -c 4 network
-ping -c 4 compute
-```
-
-**On the Network Node:**
-
-```bash
-ping -c 4 controller
-ping -c 4 network
 ping -c 4 compute
 ```
 
@@ -70,7 +50,6 @@ ping -c 4 compute
 
 ```bash
 ping -c 4 controller
-ping -c 4 network
 ping -c 4 compute
 ```
 
@@ -79,17 +58,12 @@ ping -c 4 compute
 ```bash
 ssh-keygen
 ssh-copy-id root@compute.example.com
-ssh-copy-id root@network.example.com
 ```
 
 Let verify we can connect.
 
 ```bash
 ssh root@compute.example.com
-```
-
-```bash
- ssh root@network.example.com
 ```
 
 # 6) Network Time Protocol (NTP) Setup
@@ -103,7 +77,10 @@ yum install chrony
 Edit the /etc/chrony.conf file and configure the server:
 
 ```
-server 0.pool.ntp.org
+server 0.centos.pool.ntp.org iburst
+server 1.centos.pool.ntp.org iburst
+server 2.centos.pool.ntp.org iburst
+server 3.centos.pool.ntp.org iburst
 ```
 
 Start the NTP service and configure it to start when the system boots:
@@ -113,7 +90,7 @@ systemctl enable chronyd.service
 systemctl start chronyd.service
 ```
 
-On Compute node:
+**On Compute node:**
 
 ```bash
 yum install chrony
@@ -132,8 +109,6 @@ systemctl enable chronyd.service
 systemctl start chronyd.service
 ```
 
-Do the same on the Network Node.
-
 # 7) Set OpenStack Newton Repository
 
 ```bash
@@ -145,7 +120,7 @@ yum install openstack-selinux
 
 # 8) Install MariaDB
 
-On Controller node
+**On Controller node**
 
 ```bash
 yum install mariadb mariadb-server python2-PyMySQL
