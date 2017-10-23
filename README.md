@@ -733,4 +733,101 @@ openstack endpoint create --region RegionOne network internal http://controller:
 openstack endpoint create --region RegionOne network admin http://controller:9696
 ```
 
+16) Configure the Networking Self-service networks
+
+Install the components:
+
+```bash
+yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-common
+```
+
+Configure the server component
+
+Edit the /etc/neutron/neutron.conf file and complete the following actions:
+
+```bash
+[DEFAULT]
+bind_host=0.0.0.0
+auth_strategy=keystone
+core_plugin=neutron.plugins.ml2.plugin.Ml2Plugin
+service_plugins=router,metering
+allow_overlapping_ips=True
+notify_nova_on_port_status_changes=True
+notify_nova_on_port_data_changes=True
+api_workers=2
+rpc_workers=2
+router_scheduler_driver=neutron.scheduler.l3_agent_scheduler.ChanceScheduler
+l3_ha=False
+max_l3_agents_per_router=3
+debug=False
+log_dir=/var/log/neutron
+rpc_backend=rabbit
+control_exchange=neutron
+#nova_url=http://192.168.57.102:8774/v2
+transport_url = rabbit://openstack:rootroot@10.0.2.15
+
+[agent]
+root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
+
+[database]
+connection=mysql+pymysql://neutron:rootroot@10.0.2.15/neutron
+
+[keystone_authtoken]
+auth_uri=http://controller:5000
+auth_url=http://controller:35357
+auth_type=password
+project_name=services
+username=neutron
+project_domain_name=Default
+user_domain_name=Default
+password=rootroot
+
+[nova]
+region_name=RegionOne
+auth_url=http://controller:35357
+auth_type=password
+password=rootroot
+project_domain_id=default
+project_name=services
+tenant_name=services
+user_domain_id=default
+username=nova
+
+[oslo_concurrency]
+lock_path=$state_path/lock
+```
+
+Configure the Modular Layer 2 (ML2) plug-in:
+
+Edit the /etc/neutron/plugins/ml2/ml2_conf.ini file and complete the following actions:
+
+```bash
+[DEFAULT]
+
+[ml2]
+type_drivers = vxlan
+tenant_network_types = vxlan
+mechanism_drivers =openvswitch
+path_mtu = 0
+
+[ml2_type_vxlan]
+vni_ranges =10:100
+vxlan_group = 224.0.0.1
+
+[securitygroup]
+firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+enable_security_group = True
+```
+
+The Networking service initialization scripts expect a symbolic link /etc/neutron/plugin.ini pointing to the ML2 plug-in configuration file, /etc/neutron/plugins/ml2/ml2_conf.ini. If this symbolic link does not exist, create it using the following command:
+
+```bash
+ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+```
+
+Populate the database:
+
+```bash
+su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
+```
 
