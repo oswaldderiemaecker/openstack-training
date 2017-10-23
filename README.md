@@ -303,6 +303,12 @@ export OS_IDENTITY_API_VERSION=3
 
 11) Create a domain, projects, users, and roles
 
+Set the environment:
+
+```bash
+. keystonerc_admin
+```
+
 Create the service project:
 
 ```bash
@@ -407,17 +413,9 @@ Edit the /etc/glance/glance-api.conf file and complete the following actions:
 
 ```
 [DEFAULT]
-bind_host = 0.0.0.0
-bind_port = 9292
-workers = 2
-image_cache_dir = /var/lib/glance/image-cache
-registry_host = 0.0.0.0
-debug = False
-log_file = /var/log/glance/api.log
-log_dir = /var/log/glance
 
 [database]
-connection = mysql+pymysql://glance:glance@10.0.2.15/glance
+connection = mysql+pymysql://glance:rootroot@10.0.2.15/glance
 
 [glance_store]
 stores = file,http,swift
@@ -426,15 +424,15 @@ filesystem_store_datadir = /var/lib/glance/images/
 os_region_name=RegionOne
 
 [keystone_authtoken]
-auth_uri = http://192.168.57.102:5000/v2.0
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
 auth_type = password
-project_name=services
-username=glance
-password=rootroot
-auth_url=http://192.168.57.102:35357
-
-[oslo_policy]
-policy_file = /etc/glance/policy.json
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = glance
+password = rootroot
 
 [paste_deploy]
 flavor = keystone
@@ -444,26 +442,19 @@ Edit the /etc/glance/glance-registry.conf file and complete the following action
 
 ```
 [DEFAULT]
-bind_host = 0.0.0.0
-bind_port = 9191
-workers = 2
-debug = False
-log_file = /var/log/glance/registry.log
-log_dir = /var/log/glance
 
 [database]
 connection = mysql+pymysql://glance:rootroot@10.0.2.15/glance
-
 [keystone_authtoken]
-auth_uri = http://192.168.57.102:5000/v2.0
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
 auth_type = password
-username=glance
-project_name=services
-password=rootroot
-auth_url=http://192.168.57.102:35357
-
-[oslo_policy]
-policy_file = /etc/glance/policy.json
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = glance
+password = rootroot
 
 [paste_deploy]
 flavor = keystone
