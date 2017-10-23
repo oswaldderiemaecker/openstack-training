@@ -154,7 +154,7 @@ Create and edit the /etc/my.cnf.d/openstack.cnf file
 
 ```
 [mysqld]
-bind-address = 192.168.57.102
+bind-address = 10.0.2.15
 default-storage-engine = innodb
 innodb_file_per_table
 max_connections = 4096
@@ -239,40 +239,11 @@ Edit the /etc/keystone/keystone.conf file and complete with the following:
 
 ```
 [DEFAULT]
-admin_token = 602c191552204c67bcc8e7d120b8b20d
-debug = False
-log_dir = /var/log/keystone
-rpc_backend = rabbit
-public_port=5000
-admin_bind_host=0.0.0.0
-public_bind_host=0.0.0.0
-admin_port=35357
-
-[catalog]
-template_file = /etc/keystone/default_catalog.templates
-driver = sql
-
-[credential]
-key_repository = /etc/keystone/credential-keys
-
 [database]
-connection = mysql+pymysql://keystone_admin:rootroot@10.0.2.15/keystone
-
-[eventlet_server]
-public_workers=2
-admin_workers=2
-
-[fernet_tokens]
-key_repository = /etc/keystone/fernet-keys
+connection = mysql+pymysql://keystone:rootroot@10.0.2.15/keystone
 
 [token]
-expiration = 3600
-provider = keystone.token.providers.uuid.Provider
-driver = sql
-revoke_by_id = True
-
-[ssl]
-enable=False
+provider = fernet
 ```
 
 Populate the Identity service database:
