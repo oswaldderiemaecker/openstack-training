@@ -17,7 +17,8 @@ configuration.
 
 # 2) Configure Hosts and the Hostname
 
-On the controller Node:
+**On the controller Node:**
+
 ```bash
 echo 'controller' > /etc/hostname
 echo '192.168.57.102 controller.example.com controller
@@ -25,7 +26,7 @@ echo '192.168.57.102 controller.example.com controller
 192.168.57.101 network.example.com network' >> /etc/hosts
 ```
 
-On the Network Node:
+**On the Network Node:**
 ```bash
 echo 'network' > /etc/hostname
 echo '192.168.57.102 controller.example.com controller
@@ -33,7 +34,7 @@ echo '192.168.57.102 controller.example.com controller
 192.168.57.101 network.example.com network' >> /etc/hosts
 ```
 
-On the Compute Node:
+**On the Compute Node:**
 ```bash
 echo 'compute' > /etc/hostname
 echo '192.168.57.102 controller.example.com controller
@@ -49,7 +50,7 @@ yum update -y ; reboot
 
 # 4) Verify connectivity
 
-On the controller Node:
+**On the controller Node:**
 
 ```bash
 ping -c 4 controller
@@ -57,7 +58,7 @@ ping -c 4 network
 ping -c 4 compute
 ```
 
-On the Network Node:
+**On the Network Node:**
 
 ```bash
 ping -c 4 controller
@@ -65,7 +66,7 @@ ping -c 4 network
 ping -c 4 compute
 ```
 
-On the Compute Node:
+**On the Compute Node:**
 
 ```bash
 ping -c 4 controller
@@ -686,7 +687,7 @@ openstack compute service list
 
 # 17) Networking (neutron) service install and setup
 
-On controller node
+**On controller node**
 
 Use the database access client to connect to the database server as the root user:
 
@@ -954,7 +955,7 @@ Should output:
     ovs_version: "2.6.1"
 ```
 
-On the Controller:
+**On the Controller:**
 
 Create the base networks:
 
@@ -1316,7 +1317,7 @@ systemctl restart neutron-server.service neutron-dhcp-agent.service neutron-meta
 
 # 21) Restart everything
 
-On the Controller Node:
+**On the Controller Node:**
 
 ```bash
 systemctl restart openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
@@ -1341,7 +1342,7 @@ systemctl status openstack-glance-registry.service
 systemctl status httpd.service memcached.service
 ```
 
-On the Compute Node:
+**On the Compute Node:**
 
 ```bash
 systemctl restart openvswitch.service
