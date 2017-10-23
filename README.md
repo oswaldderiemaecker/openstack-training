@@ -10,12 +10,12 @@ Each VM has a NAT Network and a Host-Only Adapter set to the same Adapter.
 
 For simplicity we will use the password rootroot for all passwords.
 
-1) Installation of base system on the VMs
+#1) Installation of base system on the VMs
 
 Get CentOs 7(https://www.centos.org/download/) and install it, configure the network and base settings to suite your
 configuration.
 
-2) Configure Hosts and the Hostname
+#2) Configure Hosts and the Hostname
 
 On the controller Node:
 ```bash
