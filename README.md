@@ -270,7 +270,17 @@ keystone-manage bootstrap --bootstrap-password rootroot --bootstrap-admin-url ht
 
 Configure the Apache HTTP server:
 
-Copy the ./keystone/httpd/conf/httpd.conf to /etc/httpd/conf/httpd.conf file.
+Edit the /etc/httpd/conf/httpd.conf file and configure the ServerName option to reference the controller node:
+
+```
+ServerName controller
+```
+
+Create a link to the /usr/share/keystone/wsgi-keystone.conf file:
+
+```bash
+ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/
+```
 
 Start the Apache HTTP service and configure it to start when the system boots:
 
