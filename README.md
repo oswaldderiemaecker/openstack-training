@@ -709,7 +709,7 @@ openstack endpoint create --region RegionOne network internal http://controller:
 openstack endpoint create --region RegionOne network admin http://controller:9696
 ```
 
-# 18) Configure the Networking Self-service networks
+# 18) Configure Neutron the Networking Self-service networks
 
 Install the components:
 
@@ -809,11 +809,47 @@ region_name = RegionOne
 project_name = service
 username = neutron
 password = rootroot
+service_metadata_proxy = True
+metadata_proxy_shared_secret = rootroot
 
 The Networking service initialization scripts expect a symbolic link /etc/neutron/plugin.ini pointing to the ML2 plug-in configuration file, /etc/neutron/plugins/ml2/ml2_conf.ini. If this symbolic link does not exist, create it using the following command:
 
 ```bash
 ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+```
+
+Configure l3-agent by editing the /etc/neutron/l3_agent.ini file:
+
+```bash
+[DEFAULT]
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+agent_mode = legacy
+external_network_bridge =br-ex
+debug = False
+```
+
+Configure dhcp-agent by editing the /etc/neutron/dhcp_agent.ini file:
+
+```bash
+[DEFAULT]
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+resync_interval = 30
+dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
+enable_isolated_metadata = False
+enable_metadata_network = False
+debug = False
+root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
+state_path=/var/lib/neutron
+```
+
+Configure the metadata-agent by editing the /etc/neutron/metadata_agent.ini file:
+
+```bash
+[DEFAULT]
+nova_metadata_ip = 192.168.57.102
+metadata_proxy_shared_secret = rootroot
+metadata_workers = 1
+debug = False
 ```
 
 Populate the database:
@@ -833,8 +869,8 @@ Start the Networking services and configure them to start when the system boots.
 For both networking options:
 
 ```bash
-systemctl enable neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
-systemctl start neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
+systemctl enable neutron-server.service neutron-dhcp-agent.service neutron-l3-agent.service neutron-metadata-agent.service
+systemctl start neutron-server.service neutron-dhcp-agent.service neutron-l3-agent.service neutron-metadata-agent.service
 ```
 
 # 19) Configure Neutron on the Compute Node
@@ -885,14 +921,6 @@ local_ip = 10.0.2.15
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 ```
 
-Start the services:
-
-```bash
-systemctl restart openvswitch.service
-systemctl restart neutron-openvswitch-agent.service
-systemctl restart neutron-ovs-cleanup.service
-```
-
 Verify OpenVSwitch is installed and Configured correctly:
 
 ```bash
@@ -929,6 +957,53 @@ Should output:
                 options: {peer=patch-int}
     ovs_version: "2.6.1"
 ```
+
+Configure l3-agent by editing the /etc/neutron/l3_agent.ini file:
+
+```bash
+[DEFAULT]
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+agent_mode = legacy
+external_network_bridge =br-ex
+debug = False
+```
+
+Configure dhcp-agent by editing the /etc/neutron/dhcp_agent.ini file:
+
+```bash
+[DEFAULT]
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+resync_interval = 30
+dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
+enable_isolated_metadata = False
+enable_metadata_network = False
+debug = False
+root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
+state_path=/var/lib/neutron
+```
+
+Configure the metadata-agent by editing the /etc/neutron/metadata_agent.ini file:
+
+```bash
+[DEFAULT]
+nova_metadata_ip = 192.168.57.102
+metadata_proxy_shared_secret = rootroot
+metadata_workers = 1
+debug = False
+```
+
+Restart all services:
+
+```bash
+systemctl restart openvswitch.service
+systemctl restart neutron-openvswitch-agent.service
+systemctl restart neutron-ovs-cleanup.service
+systemctl restart neutron-l3-agent.service
+systemctl restart neutron-dhcp-agent.service
+```
+
+Do the network Configuration on Compute Node:
+
 
 **On the Controller:**
 
@@ -1296,7 +1371,7 @@ systemctl restart neutron-server.service neutron-dhcp-agent.service neutron-meta
 
 ```bash
 systemctl restart openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
-systemctl start neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
+systemctl start neutron-server.service neutron-dhcp-agent.service neutron-l3-agent.service neutron-metadata-agent.service
 systemctl start openstack-glance-api.service openstack-glance-registry.service
 systemctl restart httpd.service memcached.service
 ```
@@ -1311,6 +1386,7 @@ systemctl status openstack-nova-conductor.service
 systemctl status openstack-nova-novncproxy.service
 systemctl status neutron-server.service
 systemctl status neutron-dhcp-agent.service
+systemctl status neutron-l3-agent.service
 systemctl status neutron-metadata-agent.service
 systemctl status openstack-glance-api.service
 systemctl status openstack-glance-registry.service
@@ -1323,6 +1399,8 @@ systemctl status httpd.service memcached.service
 systemctl restart openvswitch.service
 systemctl restart neutron-openvswitch-agent.service
 systemctl restart neutron-ovs-cleanup.service
+systemctl restart neutron-l3-agent.service
+systemctl restart neutron-dhcp-agent.service
 ```
 
 Verify all is running fine:
@@ -1331,4 +1409,6 @@ Verify all is running fine:
 systemctl status openvswitch.service
 systemctl status neutron-openvswitch-agent.service
 systemctl status neutron-ovs-cleanup.service
+systemctl status neutron-l3-agent.service
+systemctl status neutron-dhcp-agent.service
 ```
