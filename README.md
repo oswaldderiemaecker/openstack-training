@@ -684,3 +684,53 @@ On the Controller Node Verify operation of the Compute service:
 openstack compute service list
 ```
 
+15) Networking (neutron) service install and setup
+
+On controller node
+
+Use the database access client to connect to the database server as the root user:
+
+```bash
+mysql -u root -p
+```
+
+Create the neutron database:
+
+```bash
+CREATE DATABASE neutron;
+```
+
+Grant proper access to the neutron database:
+
+```bash
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' IDENTIFIED BY 'rootroot';
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' IDENTIFIED BY 'rootroot';
+```
+
+Create the neutron user:
+
+```bash
+openstack user create --domain default --password-prompt neutron
+```
+
+Add the admin role to the neutron user:
+
+```bash
+openstack role add --project service --user neutron admin
+```
+
+Create the neutron service entity:
+
+```bash
+openstack service create --name neutron --description "OpenStack Networking" network
+```
+
+Create the Networking service API endpoints:
+
+```bash
+openstack endpoint create --region RegionOne network public http://controller:9696
+openstack endpoint create --region RegionOne network internal http://controller:9696
+openstack endpoint create --region RegionOne network admin http://controller:9696
+```
+
+
