@@ -524,4 +524,41 @@ GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%' IDENTIFIED BY 'rootroot';
 GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'localhost' IDENTIFIED BY 'rootroot';
 GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%' IDENTIFIED BY 'rootroot';
 ```
+Source the admin credentials to gain access to admin-only CLI commands:
+
+```bash
+. keystonerc_admin
+```
+
+Create the nova user:
+
+```bash
+openstack user create --domain default --password-prompt nova
+```
+
+Add the admin role to the nova user:
+
+```bash
+openstack role add --project service --user nova admin
+```
+
+Create the nova service entity:
+
+```bash
+openstack service create --name nova --description "OpenStack Compute" compute
+```
+
+Create the Compute service API endpoints:
+
+```bash
+openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1/%(tenant_id)s
+openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1/%(tenant_id)s
+openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1/%(tenant_id)s
+```
+
+Install the packages:
+
+```bash
+yum install openstack-nova-api openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler
+```
 
