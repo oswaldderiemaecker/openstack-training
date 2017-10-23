@@ -819,6 +819,21 @@ firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewal
 enable_security_group = True
 ```
 
+Configure the Compute service to use the Networking service:
+
+Edit the /etc/nova/nova.conf file and perform the following actions:
+
+[neutron]
+url = http://controller:9696
+auth_url = http://controller:35357
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = rootroot
+
 The Networking service initialization scripts expect a symbolic link /etc/neutron/plugin.ini pointing to the ML2 plug-in configuration file, /etc/neutron/plugins/ml2/ml2_conf.ini. If this symbolic link does not exist, create it using the following command:
 
 ```bash
@@ -846,3 +861,360 @@ systemctl enable neutron-server.service neutron-linuxbridge-agent.service neutro
 systemctl start neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
 ```
 
+Create the base networks:
+
+```bash
+neutron net-create public
+neutron subnet-create --name public_subnet public 172.24.4.224/28
+neutron net-create private
+neutron subnet-create --name private_subnet private 10.0.0.0/24
+neutron router-create private-router
+neutron router-interface-add private-router private_subnet
+```
+
+17) Dashboard install and configure
+
+Install the packages:
+
+```bash
+yum install openstack-dashboard
+```
+
+Edit the /etc/openstack-dashboard/local_settings file and complete the following actions:
+
+```bash
+import os
+from django.utils.translation import ugettext_lazy as _
+from horizon.utils import secret_key
+from openstack_dashboard import exceptions
+from openstack_dashboard.settings import HORIZON_CONFIG
+DEBUG = False
+TEMPLATE_DEBUG = DEBUG
+WEBROOT = '/dashboard/'
+LOGIN_URL = '/dashboard/auth/login/'
+LOGOUT_URL = '/dashboard/auth/logout/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+ALLOWED_HOSTS = ['*', ]
+OPENSTACK_API_VERSIONS = {
+  'identity': 3,
+}
+HORIZON_CONFIG = {
+    'dashboards': ('project', 'admin', 'settings',),
+    'default_dashboard': 'project',
+    'user_home': 'openstack_dashboard.views.get_user_home',
+    'ajax_queue_limit': 10,
+    'auto_fade_alerts': {
+        'delay': 3000,
+        'fade_duration': 1500,
+        'types': ['alert-success', 'alert-info']
+    },
+    'help_url': "http://docs.openstack.org",
+    'exceptions': {'recoverable': exceptions.RECOVERABLE,
+                   'not_found': exceptions.NOT_FOUND,
+                   'unauthorized': exceptions.UNAUTHORIZED},
+}
+HORIZON_CONFIG["password_autocomplete"] = "off"
+HORIZON_CONFIG["images_panel"] = "legacy"
+LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
+SECRET_KEY = '8c725ee43cc84768bda3d611136b2b6c'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+OPENSTACK_KEYSTONE_URL = "http://192.168.57.102:5000/v2.0"
+OPENSTACK_KEYSTONE_DEFAULT_ROLE = "_member_"
+
+OPENSTACK_KEYSTONE_BACKEND = {
+    'can_edit_domain': True,
+    'can_edit_group': True,
+    'can_edit_project': True,
+    'can_edit_role': True,
+    'can_edit_user': True,
+    'name': 'native',
+}
+
+OPENSTACK_HYPERVISOR_FEATURES = {
+    'can_set_mount_point': False,
+    'can_set_password': False,
+}
+
+OPENSTACK_CINDER_FEATURES = {
+    'enable_backup': False,
+}
+
+OPENSTACK_NEUTRON_NETWORK = {
+    'enable_distributed_router': False,
+    'enable_firewall': False,
+    'enable_ha_router': False,
+    'enable_lb': False,
+    'enable_quotas': True,
+    'enable_security_group': True,
+    'enable_vpn': False,
+    'profile_support': None,
+}
+
+API_RESULT_LIMIT = 1000
+API_RESULT_PAGE_SIZE = 20
+TIME_ZONE = "UTC"
+POLICY_FILES_PATH = '/etc/openstack-dashboard'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(process)d %(levelname)s %(name)s '
+                      '%(message)s'
+        },
+        'normal': {
+            'format': 'dashboard-%(name)s: %(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler',
+        },
+        'console': {
+
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/horizon/horizon.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+
+
+        'django.db.backends': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
+        'requests': {
+            'handlers': ['null'],
+            'propagate': False,
+        },
+        'horizon': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'openstack_dashboard': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'novaclient': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'cinderclient': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'keystoneclient': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'glanceclient': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'neutronclient': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'heatclient': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'ceilometerclient': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'troveclient': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'swiftclient': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'openstack_auth': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'nose.plugins.manager': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django': {
+
+            'handlers': ['file'],
+
+            'level': 'INFO',
+            'propagate': False,
+        },
+    }
+}
+SECURITY_GROUP_RULES = {
+    'all_tcp': {
+        'name': 'ALL TCP',
+        'ip_protocol': 'tcp',
+        'from_port': '1',
+        'to_port': '65535',
+    },
+    'all_udp': {
+        'name': 'ALL UDP',
+        'ip_protocol': 'udp',
+        'from_port': '1',
+        'to_port': '65535',
+    },
+    'all_icmp': {
+        'name': 'ALL ICMP',
+        'ip_protocol': 'icmp',
+        'from_port': '-1',
+        'to_port': '-1',
+    },
+    'ssh': {
+        'name': 'SSH',
+        'ip_protocol': 'tcp',
+        'from_port': '22',
+        'to_port': '22',
+    },
+    'smtp': {
+        'name': 'SMTP',
+        'ip_protocol': 'tcp',
+        'from_port': '25',
+        'to_port': '25',
+    },
+    'dns': {
+        'name': 'DNS',
+        'ip_protocol': 'tcp',
+        'from_port': '53',
+        'to_port': '53',
+    },
+    'http': {
+        'name': 'HTTP',
+        'ip_protocol': 'tcp',
+        'from_port': '80',
+        'to_port': '80',
+    },
+    'pop3': {
+        'name': 'POP3',
+        'ip_protocol': 'tcp',
+        'from_port': '110',
+        'to_port': '110',
+    },
+    'imap': {
+        'name': 'IMAP',
+        'ip_protocol': 'tcp',
+        'from_port': '143',
+        'to_port': '143',
+    },
+    'ldap': {
+        'name': 'LDAP',
+        'ip_protocol': 'tcp',
+        'from_port': '389',
+        'to_port': '389',
+    },
+    'https': {
+        'name': 'HTTPS',
+        'ip_protocol': 'tcp',
+        'from_port': '443',
+        'to_port': '443',
+    },
+    'smtps': {
+        'name': 'SMTPS',
+        'ip_protocol': 'tcp',
+        'from_port': '465',
+        'to_port': '465',
+    },
+    'imaps': {
+        'name': 'IMAPS',
+        'ip_protocol': 'tcp',
+        'from_port': '993',
+        'to_port': '993',
+    },
+    'pop3s': {
+        'name': 'POP3S',
+        'ip_protocol': 'tcp',
+        'from_port': '995',
+        'to_port': '995',
+    },
+    'ms_sql': {
+        'name': 'MS SQL',
+        'ip_protocol': 'tcp',
+        'from_port': '1433',
+        'to_port': '1433',
+    },
+    'mysql': {
+        'name': 'MYSQL',
+        'ip_protocol': 'tcp',
+        'from_port': '3306',
+        'to_port': '3306',
+    },
+    'rdp': {
+        'name': 'RDP',
+        'ip_protocol': 'tcp',
+        'from_port': '3389',
+        'to_port': '3389',
+    },
+}
+SESSION_TIMEOUT = 1800
+COMPRESS_OFFLINE = True
+FILE_UPLOAD_TEMP_DIR = '/var/tmp'
+REST_API_REQUIRED_SETTINGS = ['OPENSTACK_HYPERVISOR_FEATURES',
+                              'LAUNCH_INSTANCE_DEFAULTS',
+                              'OPENSTACK_IMAGE_FORMATS']
+```
+
+openstack flavor create --ram 1024 --vcpus 1 --disk 1 --public t1.tiny
+
+systemctl restart neutron-server.service neutron-dhcp-agent.service neutron-metadata-agent.service neutron-l3-agent
