@@ -614,3 +614,73 @@ Start the Compute services and configure them to start when the system boots:
 systemctl enable openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
 systemctl start openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
 ```
+
+14) Compute (nova) service install and configure on Compute Node
+
+Set OpenStack Newton Repository on the Compute Node
+
+```bash
+yum install centos-release-openstack-newton -y
+yum update -y
+yum install python-openstackclient
+yum install openstack-selinux
+```
+
+Install the packages:
+
+```bash
+yum install openstack-nova-compute
+```
+
+Edit the /etc/nova/nova.conf file and complete the following actions:
+
+```
+[DEFAULT]
+enabled_apis = osapi_compute,metadata
+transport_url = rabbit://openstack:rootroot@10.0.2.15
+auth_strategy = keystone
+my_ip = 192.168.57.102
+use_neutron = True
+firewall_driver = nova.virt.firewall.NoopFirewallDriver
+
+[api_database]
+connection = mysql+pymysql://nova:rootroot@10.0.2.15/nova_api
+
+[database]
+connection = mysql+pymysql://nova:rootroot@10.0.2.15/nova
+
+[glance]
+api_servers = http://controller:9292
+
+[keystone_authtoken]
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = nova
+password = rootroot
+
+[oslo_concurrency]
+lock_path = /var/lib/nova/tmp
+
+[vnc]
+vncserver_listen = $my_ip
+vncserver_proxyclient_address = $my_ip
+```
+
+Start the Compute service including its dependencies and configure them to start automatically when the system boots:
+
+```bash
+systemctl enable libvirtd.service openstack-nova-compute.service
+systemctl start libvirtd.service openstack-nova-compute.service
+```
+
+On the Controller Node Verify operation of the Compute service:
+
+```bash
+openstack compute service list
+```
+
