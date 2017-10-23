@@ -861,6 +861,101 @@ systemctl enable neutron-server.service neutron-linuxbridge-agent.service neutro
 systemctl start neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
 ```
 
+17) Configure Neutron on the Compute Node
+
+Install the components:
+
+```bash
+yum install openstack-neutron
+yum install openvswitch
+yum install openstack-neutron-openvswitch
+```
+
+Add the Neutron configuration into the /etc/nova/nova.conf file on the Compute Node:
+
+```bash
+[neutron]
+url=http://192.168.57.102:9696
+region_name=RegionOne
+ovs_bridge=br-int
+extension_sync_interval=600
+timeout=60
+auth_type=v3password
+auth_url=http://192.168.57.102:35357/v3
+project_name=service
+project_domain_name=Default
+username=neutron
+user_domain_name=Default
+password=rootroot
+```
+
+Configure the OpenVSwitch agent in /etc/neutron/plugins/ml2/openvswitch_agent.ini:
+
+```bash
+[DEFAULT]
+
+[agent]
+tunnel_types =vxlan
+vxlan_udp_port = 4789
+l2_population = False
+drop_flows_on_start = False
+
+[ovs]
+integration_bridge = br-int
+tunnel_bridge = br-tun
+local_ip = 10.0.2.15
+
+[securitygroup]
+firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+```
+
+Start the services:
+
+```bash
+systemctl restart openvswitch.service
+systemctl restart neutron-openvswitch-agent.service
+systemctl restart neutron-ovs-cleanup.service
+```
+
+Verify OpenVSwitch is installed and Configured correctly:
+
+```bash
+ovs-vsctl show
+```
+
+Should output:
+
+```
+73564bd7-9471-402e-892a-1bd3c518da78
+    Manager "ptcp:6640:127.0.0.1"
+        is_connected: true
+    Bridge br-tun
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+        fail_mode: secure
+        Port br-tun
+            Interface br-tun
+                type: internal
+        Port patch-int
+            Interface patch-int
+                type: patch
+                options: {peer=patch-tun}
+    Bridge br-int
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+        fail_mode: secure
+        Port br-int
+            Interface br-int
+                type: internal
+        Port patch-tun
+            Interface patch-tun
+                type: patch
+                options: {peer=patch-int}
+    ovs_version: "2.6.1"
+```
+
+On the Controller:
+
 Create the base networks:
 
 ```bash
@@ -872,7 +967,7 @@ neutron router-create private-router
 neutron router-interface-add private-router private_subnet
 ```
 
-17) Dashboard install and configure
+20) Dashboard install and configure
 
 Install the packages:
 
