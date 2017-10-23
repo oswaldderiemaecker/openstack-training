@@ -831,3 +831,18 @@ Populate the database:
 su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
 ```
 
+Restart the Compute API service:
+
+```bash
+systemctl restart openstack-nova-api.service
+```
+
+Start the Networking services and configure them to start when the system boots.
+
+For both networking options:
+
+```bash
+systemctl enable neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
+systemctl start neutron-server.service neutron-linuxbridge-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
+```
+
