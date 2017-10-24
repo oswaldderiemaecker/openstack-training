@@ -103,7 +103,7 @@ ssh root@compute.example.com
 ```
 
 ```bash
- ssh root@network.example.com
+ssh root@network.example.com
 ```
 
 ## 1.7 Network Time Protocol (NTP) Setup
