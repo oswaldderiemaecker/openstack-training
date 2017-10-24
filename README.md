@@ -49,7 +49,16 @@ echo '192.168.57.102 controller.example.com controller
 yum update -y ; reboot
 ```
 
-## 1.4 Verify connectivity
+## 1.4 Stop and disable firewalld & NetworkManager Service
+
+```bash
+systemctl stop firewalld
+systemctl disable firewalld
+systemctl stop NetworkManager
+systemctl disable NetworkManager
+```
+
+## 1.5 Verify connectivity
 
 **On the controller Node:**
 
@@ -75,7 +84,7 @@ ping -c 4 network
 ping -c 4 www.google.com
 ```
 
-## 1.5 Create SSH Access:
+## 1.6 Create SSH Access:
 
 ```bash
 ssh-keygen
@@ -93,7 +102,7 @@ ssh root@compute.example.com
  ssh root@network.example.com
 ```
 
-## 1.6 Network Time Protocol (NTP) Setup
+## 1.7 Network Time Protocol (NTP) Setup
 
 **On the Controller Node:**
 
@@ -136,7 +145,7 @@ systemctl enable chronyd.service
 systemctl start chronyd.service
 ```
 
-## 1.7 Set OpenStack Newton Repository
+## 1.8 Set OpenStack Newton Repository
 
 **On all Nodes install:**
 
@@ -147,7 +156,7 @@ yum install python-openstackclient
 yum install openstack-selinux
 ```
 
-## 1.8 Install MariaDB
+## 1.9 Install MariaDB
 
 **On Controller node**
 
@@ -180,7 +189,7 @@ Secure the database service by running the mysql_secure_installation script.
 mysql_secure_installation
 ```
 
-## 1.9 RabbitMQ message queue Setup
+## 1.10 RabbitMQ message queue Setup
 
 **On Controller node**
 
@@ -207,7 +216,7 @@ Permit configuration, write, and read access for the openstack user:
 rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 ```
 
-## 1.10 Memcached setup
+## 1.11 Memcached setup
 
 **On Controller node**
 
