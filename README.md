@@ -14,7 +14,7 @@ For simplicity we will use the password **rootroot** for all passwords.
 
 ## 1.1 Installation of base system on the VMs
 
-Get CentOs 7(https://www.centos.org/download/) and install it, configure the network and base settings to suite your
+Get [CentOs 7](https://www.centos.org/download/) and install it, configure the network and base settings to suite your
 configuration.
 
 ## 1.2 Configure Hosts and the Hostname
