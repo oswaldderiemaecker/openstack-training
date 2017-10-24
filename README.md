@@ -1,9 +1,10 @@
 I am using the Mac for installation and have the VirtualBox installed.
 
-For the Newton openstack setup we must have the two virtual machine ready with atleast below requirement:
+For the Newton openstack setup we must have the three virtual machine ready with atleast below requirement:
 
 * Controller Node: 2 processor, 4 GB memory, and 5 GB storage
 * Compute Node: 2 processor, 4 GB memory, and 20 GB storage
+* Network Node: 1 processor, 2 GB memory, and 5 GB storage
 
 Each VM has a NAT Network and a Host-Only Adapter set to the same Adapter.
 
@@ -16,19 +17,28 @@ configuration.
 
 # 2) Configure Hosts and the Hostname
 
-**On the controller Node:**
-
+On the controller Node:
 ```bash
 echo 'controller' > /etc/hostname
 echo '192.168.57.102 controller.example.com controller
-192.168.57.100 compute.example.com compute' >> /etc/hosts
+192.168.57.100 compute.example.com compute
+192.168.57.101 network.example.com network' >> /etc/hosts
 ```
 
-**On the Compute Node:**
+On the Network Node:
+```bash
+echo 'network' > /etc/hostname
+echo '192.168.57.102 controller.example.com controller
+192.168.57.100 compute.example.com compute
+192.168.57.101 network.example.com network' >> /etc/hosts
+```
+
+On the Compute Node:
 ```bash
 echo 'compute' > /etc/hostname
 echo '192.168.57.102 controller.example.com controller
-192.168.57.100 compute.example.com compute' >> /etc/hosts
+192.168.57.100 compute.example.com compute
+192.168.57.101 network.example.com network' >> /etc/hosts
 ```
 
 # 3) Upgrade the OS and reboot:
@@ -46,6 +56,14 @@ ping -c 4 controller
 ping -c 4 compute
 ```
 
+On the Network Node:
+
+```bash
+ping -c 4 controller
+ping -c 4 network
+ping -c 4 compute
+```
+
 **On the Compute Node:**
 
 ```bash
@@ -58,6 +76,7 @@ ping -c 4 compute
 ```bash
 ssh-keygen
 ssh-copy-id root@compute.example.com
+ssh-copy-id root@network.example.com
 ```
 
 Let verify we can connect.
@@ -66,9 +85,13 @@ Let verify we can connect.
 ssh root@compute.example.com
 ```
 
+```bash
+ ssh root@network.example.com
+```
+
 # 6) Network Time Protocol (NTP) Setup
 
-On the Controller Node:
+**On the Controller Node:**
 
 ```bash
 yum install chrony
@@ -110,6 +133,8 @@ systemctl start chronyd.service
 ```
 
 # 7) Set OpenStack Newton Repository
+
+**On all Nodes install:**
 
 ```bash
 yum install centos-release-openstack-newton -y
@@ -153,6 +178,8 @@ mysql_secure_installation
 
 # 9) RabbitMQ message queue Setup
 
+**On Controller node**
+
 ```bash
 yum install rabbitmq-server
 ```
@@ -178,6 +205,8 @@ rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 
 # 10) Memcached setup
 
+**On Controller node**
+
 ```bash
 yum install memcached python-memcached
 ```
@@ -190,6 +219,8 @@ systemctl start memcached.service
 ```
 
 # 11) Installing Keystone
+
+**On Controller node**
 
 Connect to mysql
 
@@ -279,6 +310,8 @@ export OS_IDENTITY_API_VERSION=3
 
 # 12) Create a domain, projects, users, and roles
 
+**On Controller node**
+
 Set the environment:
 
 ```bash
@@ -317,6 +350,8 @@ openstack role add --project demo --user demo user
 
 # 13) Verify operation of the Identity service
 
+**On Controller node**
+
 For security reasons, disable the temporary authentication token mechanism:
 
 Edit the /etc/keystone/keystone-paste.ini file and remove admin_token_auth from the [pipeline:public_api], [pipeline:admin_api], and [pipeline:api_v3] sections.
@@ -340,6 +375,8 @@ openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Defau
 ```
 
 # 14) Image (glance) service install and configure
+
+**On Controller node**
 
 Use the database access client to connect to the database server as the root user:
 
@@ -475,6 +512,8 @@ openstack image list
 ```
 
 # 15) Compute (nova) service install and configure on Controller node
+
+**On Controller node**
 
 Before you install and configure the Compute service, you must create databases, service credentials, 
 and API endpoints.
@@ -1371,9 +1410,10 @@ systemctl restart neutron-server.service neutron-dhcp-agent.service neutron-meta
 
 ```bash
 systemctl restart openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
-systemctl start neutron-server.service neutron-dhcp-agent.service neutron-l3-agent.service neutron-metadata-agent.service
-systemctl start openstack-glance-api.service openstack-glance-registry.service
+systemctl restart neutron-server.service
+systemctl restart openstack-glance-api.service openstack-glance-registry.service
 systemctl restart httpd.service memcached.service
+systemctl restart rabbitmq-server.service
 ```
 
 Verify all is running fine:
@@ -1385,22 +1425,22 @@ systemctl status openstack-nova-scheduler.service
 systemctl status openstack-nova-conductor.service
 systemctl status openstack-nova-novncproxy.service
 systemctl status neutron-server.service
-systemctl status neutron-dhcp-agent.service
-systemctl status neutron-l3-agent.service
 systemctl status neutron-metadata-agent.service
 systemctl status openstack-glance-api.service
 systemctl status openstack-glance-registry.service
 systemctl status httpd.service memcached.service
+systemctl status rabbitmq-server.service
 ```
 
-**On the Compute Node:**
+On the Network Node:
 
 ```bash
 systemctl restart openvswitch.service
 systemctl restart neutron-openvswitch-agent.service
 systemctl restart neutron-ovs-cleanup.service
-systemctl restart neutron-l3-agent.service
 systemctl restart neutron-dhcp-agent.service
+systemctl restart neutron-l3-agent.service
+systemctl restart neutron-metadata-agent.service
 ```
 
 Verify all is running fine:
@@ -1409,6 +1449,23 @@ Verify all is running fine:
 systemctl status openvswitch.service
 systemctl status neutron-openvswitch-agent.service
 systemctl status neutron-ovs-cleanup.service
-systemctl status neutron-l3-agent.service
 systemctl status neutron-dhcp-agent.service
+systemctl status neutron-l3-agent.service
+systemctl status neutron-metadata-agent.service
+```
+
+**On the Compute Node:**
+
+```bash
+systemctl restart openvswitch.service
+systemctl restart neutron-openvswitch-agent.service
+systemctl restart neutron-ovs-cleanup.service
+```
+
+Verify all is running fine:
+
+```bash
+systemctl status openvswitch.service
+systemctl status neutron-openvswitch-agent.service
+systemctl status neutron-ovs-cleanup.service
 ```
