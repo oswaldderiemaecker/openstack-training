@@ -957,7 +957,7 @@ enable_security_group = True
 
 Configure the Compute service to use the Networking service:
 
-**On both the Controller and Compute node!**
+**On both the Controller**
 
 Edit the /etc/nova/nova.conf file and perform the following actions:
 
@@ -985,40 +985,6 @@ The Networking service initialization scripts expect a symbolic link /etc/neutro
 ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
 ```
 
-Configure l3-agent by editing the /etc/neutron/l3_agent.ini file:
-
-```bash
-[DEFAULT]
-interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-agent_mode = legacy
-external_network_bridge =br-ex
-debug = False
-```
-
-Configure dhcp-agent by editing the /etc/neutron/dhcp_agent.ini file:
-
-```bash
-[DEFAULT]
-interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-resync_interval = 30
-dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
-enable_isolated_metadata = False
-enable_metadata_network = False
-debug = False
-root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
-state_path=/var/lib/neutron
-```
-
-Configure the metadata-agent by editing the /etc/neutron/metadata_agent.ini file:
-
-```bash
-[DEFAULT]
-nova_metadata_ip = 192.168.57.102
-metadata_proxy_shared_secret = rootroot
-metadata_workers = 1
-debug = False
-```
-
 Populate the database:
 
 ```bash
@@ -1040,7 +1006,9 @@ systemctl enable neutron-server.service neutron-dhcp-agent.service neutron-l3-ag
 systemctl start neutron-server.service neutron-dhcp-agent.service neutron-l3-agent.service neutron-metadata-agent.service
 ```
 
-# 19) Configure Neutron on the Compute Node
+## 2.3.2 Configure Neutron on the Compute Node
+
+**On Compute node**
 
 Install the components:
 
@@ -1049,6 +1017,38 @@ yum install openstack-neutron
 yum install openvswitch
 yum install openstack-neutron-openvswitch
 ```
+
+Edit the /etc/neutron/neutron.conf file and complete the following actions:
+
+```bash
+[DEFAULT]
+bind_host=0.0.0.0
+auth_strategy=keystone
+core_plugin=neutron.plugins.ml2.plugin.Ml2Plugin
+service_plugins=router,metering
+allow_overlapping_ips=True
+debug=False
+log_dir=/var/log/neutron
+rpc_backend=rabbit
+control_exchange=neutron
+
+[agent]
+root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
+
+[oslo_concurrency]
+lock_path=$state_path/lock
+
+[oslo_messaging_rabbit]
+kombu_ssl_keyfile=
+kombu_ssl_certfile=
+kombu_ssl_ca_certs=
+rabbit_host=192.168.57.102
+rabbit_port=5672
+rabbit_use_ssl=False
+rabbit_userid=guest
+rabbit_password=guest
+```
+
 
 Add the Neutron configuration into the /etc/nova/nova.conf file on the Compute Node:
 
@@ -1125,52 +1125,15 @@ Should output:
     ovs_version: "2.6.1"
 ```
 
-Configure l3-agent by editing the /etc/neutron/l3_agent.ini file:
-
-```bash
-[DEFAULT]
-interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-agent_mode = legacy
-external_network_bridge =br-ex
-debug = False
-```
-
-Configure dhcp-agent by editing the /etc/neutron/dhcp_agent.ini file:
-
-```bash
-[DEFAULT]
-interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-resync_interval = 30
-dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
-enable_isolated_metadata = False
-enable_metadata_network = False
-debug = False
-root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
-state_path=/var/lib/neutron
-```
-
-Configure the metadata-agent by editing the /etc/neutron/metadata_agent.ini file:
-
-```bash
-[DEFAULT]
-nova_metadata_ip = 192.168.57.102
-metadata_proxy_shared_secret = rootroot
-metadata_workers = 1
-debug = False
-```
-
 Restart all services:
 
 ```bash
 systemctl restart openvswitch.service
 systemctl restart neutron-openvswitch-agent.service
 systemctl restart neutron-ovs-cleanup.service
-systemctl restart neutron-l3-agent.service
-systemctl restart neutron-dhcp-agent.service
 ```
 
-Do the network Configuration on Compute Node:
-
+Do the network Configuration:
 
 **On the Controller:**
 
