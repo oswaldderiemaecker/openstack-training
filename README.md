@@ -434,7 +434,7 @@ openstack user create --domain default --password-prompt glance
 Add the admin role to the glance user and service project:
 
 ```bash
-openstack role add --project service --user glance admin
+openstack role add --project services --user glance admin
 ```
 
 Create the glance service entity:
