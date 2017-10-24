@@ -1155,6 +1155,22 @@ local_ip = 10.0.2.15
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 ```
 
+Restart all services:
+
+```bash
+systemctl restart openvswitch.service
+systemctl restart neutron-openvswitch-agent.service
+systemctl restart neutron-ovs-cleanup.service
+```
+
+Verify all is running fine:
+
+```bash
+systemctl status openvswitch.service
+systemctl status neutron-openvswitch-agent.service
+systemctl status neutron-ovs-cleanup.service
+```
+
 Verify OpenVSwitch is installed and Configured correctly:
 
 ```bash
@@ -1190,22 +1206,6 @@ Should output:
                 type: patch
                 options: {peer=patch-int}
     ovs_version: "2.6.1"
-```
-
-Restart all services:
-
-```bash
-systemctl restart openvswitch.service
-systemctl restart neutron-openvswitch-agent.service
-systemctl restart neutron-ovs-cleanup.service
-```
-
-Verify all is running fine:
-
-```bash
-systemctl status openvswitch.service
-systemctl status neutron-openvswitch-agent.service
-systemctl status neutron-ovs-cleanup.service
 ```
 
 ## 2.3.3 Configure Neutron on the Network Node
