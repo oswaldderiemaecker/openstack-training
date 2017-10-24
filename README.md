@@ -43,19 +43,21 @@ echo '192.168.57.102 controller.example.com controller
 192.168.57.101 network.example.com network' >> /etc/hosts
 ```
 
-## 1.3 Upgrade the OS and reboot:
+## 1.3 Stop and disable firewalld & NetworkManager Service
 
-```bash
-yum update -y ; reboot
-```
-
-## 1.4 Stop and disable firewalld & NetworkManager Service
+**On all Nodes**
 
 ```bash
 systemctl stop firewalld
 systemctl disable firewalld
 systemctl stop NetworkManager
 systemctl disable NetworkManager
+```
+
+## 1.4 Upgrade the OS and reboot:
+
+```bash
+yum update -y ; reboot
 ```
 
 ## 1.5 Verify connectivity
@@ -68,7 +70,7 @@ ping -c 4 compute
 ping -c 4 www.google.com
 ```
 
-On the Network Node:
+**On the Network Node:**
 
 ```bash
 ping -c 4 controller
