@@ -1807,3 +1807,21 @@ systemctl status openvswitch.service
 systemctl status neutron-openvswitch-agent.service
 systemctl status neutron-ovs-cleanup.service
 ```
+
+OpenStack Ports:
+
+OpenStack Service      Port
+Nova-api               8773 (for EC2 API)
+                       8774 (for openstack API)
+                       8775 (metadata port)
+                       3333 (when accessing S3 API)
+nova-novncproxy        6080
+                       5800/5900 (VNC)
+cinder                 8776
+glance                 9191 (glance registry)
+                       9292 (glance api)
+keystone               5000 (public port)
+                       35357 (admin port)
+http                   80
+Mysql                  3306
+AMQP                   5672
