@@ -1856,3 +1856,11 @@ Update the hours on the Nodes:
 yum install ntpdate
 ntpdate -u 0.europe.pool.ntp.org
 ```
+
+# TODO
+
+* Cinder
+* Floating IPs
+* ip netns exec
+* Swift
+
