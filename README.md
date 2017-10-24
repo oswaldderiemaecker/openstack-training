@@ -1353,31 +1353,41 @@ ovs-vsctl show
 Should output:
 
 ```
-73564bd7-9471-402e-892a-1bd3c518da78
+d61c5814-4bce-41d6-a966-a4220282f1d1
     Manager "ptcp:6640:127.0.0.1"
         is_connected: true
+    Bridge br-ex
+        Port br-ex
+            Interface br-ex
+                type: internal
+        Port "qg-afbd49e9-ee"
+            Interface "qg-afbd49e9-ee"
+                type: internal
+        Port "qg-337673f5-dd"
+            Interface "qg-337673f5-dd"
+                type: internal
     Bridge br-tun
         Controller "tcp:127.0.0.1:6633"
             is_connected: true
         fail_mode: secure
-        Port br-tun
-            Interface br-tun
-                type: internal
         Port patch-int
             Interface patch-int
                 type: patch
                 options: {peer=patch-tun}
+        Port br-tun
+            Interface br-tun
+                type: internal
     Bridge br-int
         Controller "tcp:127.0.0.1:6633"
             is_connected: true
         fail_mode: secure
-        Port br-int
-            Interface br-int
-                type: internal
         Port patch-tun
             Interface patch-tun
                 type: patch
                 options: {peer=patch-int}
+        Port br-int
+            Interface br-int
+                type: internal
     ovs_version: "2.6.1"
 ```
 
