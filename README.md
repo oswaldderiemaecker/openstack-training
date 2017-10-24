@@ -759,7 +759,6 @@ Set OpenStack Newton Repository on the Compute Node
 yum install centos-release-openstack-newton -y
 yum update -y
 yum install python-openstackclient
-yum install openstack-selinux
 ```
 
 Install the packages:
