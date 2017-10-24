@@ -529,6 +529,8 @@ Create the image cache folder:
 ```bash
 mkdir -p /var/lib/glance/images/
 mkdir -p /var/lib/glance/image-cache
+chown -R glance:glance /var/lib/glance/images
+chown -R glance:glance /var/lib/glance/images-cache
 ```
 
 Populate the Image service database:
