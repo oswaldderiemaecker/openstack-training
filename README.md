@@ -1883,3 +1883,10 @@ keystone               5000 (public port)
 http                   80
 Mysql                  3306
 AMQP                   5672
+
+Update the hours on the Nodes:
+
+```bash
+yum install ntpdate
+ntpdate -u 0.europe.pool.ntp.org
+```
