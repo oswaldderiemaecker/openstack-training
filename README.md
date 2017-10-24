@@ -685,7 +685,7 @@ image_service=nova.image.glance.GlanceImageService
 osapi_volume_listen=0.0.0.0
 
 [api_database]
-connection=mysql+pymysql://nova_api:rootroot@10.0.2.15/nova_api
+connection=mysql+pymysql://nova:rootroot@10.0.2.15/nova_api
 
 [cinder]
 catalog_info=volumev2:cinderv2:publicURL
@@ -798,7 +798,7 @@ image_service=nova.image.glance.GlanceImageService
 volume_api_class=nova.volume.cinder.API
 
 [api_database]
-connection=mysql+pymysql://nova_api:rootroot@192.168.57.102/nova_api
+connection=mysql+pymysql://nova:rootroot@192.168.57.102/nova_api
 
 [cinder]
 catalog_info=volumev2:cinderv2:publicURL
