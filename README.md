@@ -540,6 +540,12 @@ systemctl enable openstack-glance-api.service openstack-glance-registry.service
 systemctl start openstack-glance-api.service openstack-glance-registry.service
 ```
 
+Verify the Glance Service is running:
+
+```bash
+systemctl status openstack-glance-api.service openstack-glance-registry.service
+```
+
 Now download the cirros source image:
 
 ```bash
