@@ -1784,9 +1784,19 @@ REST_API_REQUIRED_SETTINGS = ['OPENSTACK_HYPERVISOR_FEATURES',
                               'OPENSTACK_IMAGE_FORMATS']
 ```
 
-openstack flavor create --ram 1024 --vcpus 1 --disk 1 --public t1.tiny
+Set permission on Horizon log:
 
-systemctl restart neutron-server.service neutron-dhcp-agent.service neutron-metadata-agent.service neutron-l3-agent
+```bash
+chown -R apache:apache /var/log/horizon
+```
+
+Finalize the configuration of OpenStack:
+
+Create Flavors:
+
+```bash
+openstack flavor create --ram 1024 --vcpus 1 --disk 1 --public t1.tiny
+```
 
 # 3 Tips
 
