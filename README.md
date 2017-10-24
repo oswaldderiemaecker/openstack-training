@@ -130,7 +130,7 @@ systemctl enable chronyd.service
 systemctl start chronyd.service
 ```
 
-**On Compute node:**
+**On Compute and Network node:**
 
 ```bash
 yum install chrony
@@ -147,6 +147,16 @@ Start the NTP service and configure it to start when the system boots:
 ```bash
 systemctl enable chronyd.service
 systemctl start chronyd.service
+```
+
+Verify:
+
+```bash
+chronyc sources
+210 Number of sources = 1
+MS Name/IP address         Stratum Poll Reach LastRx Last sample
+===============================================================================
+^? controller.example.com        0   6     0     -     +0ns[   +0ns] +/-    0ns
 ```
 
 ## 1.8 Set OpenStack Newton Repository
