@@ -535,7 +535,9 @@ chown -R glance:glance /var/lib/glance/images-cache
 
 Populate the Image service database:
 
+```bash
 su -s /bin/sh -c "glance-manage db_sync" glance
+```
 
 Start the Image services and configure them to start when the system boots:
 
