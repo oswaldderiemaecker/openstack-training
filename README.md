@@ -173,7 +173,6 @@ MS Name/IP address         Stratum Poll Reach LastRx Last sample
 yum install centos-release-openstack-newton -y
 yum update -y
 yum install python-openstackclient
-yum install openstack-selinux
 ```
 
 ## 1.9 Install MariaDB
