@@ -884,7 +884,7 @@ openstack user create --domain default --password-prompt neutron
 Add the admin role to the neutron user:
 
 ```bash
-openstack role add --project service --user neutron admin
+openstack role add --project services --user neutron admin
 ```
 
 Create the neutron service entity:
