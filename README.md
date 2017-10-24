@@ -526,7 +526,8 @@ flavor = keystone
 Create the image cache folder:
 
 ```bash
-mkdir /var/lib/glance/images/
+mkdir -p /var/lib/glance/images/
+mkdir -p /var/lib/glance/image-cache
 ```
 
 Populate the Image service database:
