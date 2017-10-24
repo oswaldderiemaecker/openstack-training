@@ -54,23 +54,25 @@ yum update -y ; reboot
 **On the controller Node:**
 
 ```bash
-ping -c 4 controller
+ping -c 4 network
 ping -c 4 compute
+ping -c www.google.com
 ```
 
 On the Network Node:
 
 ```bash
 ping -c 4 controller
-ping -c 4 network
 ping -c 4 compute
+ping -c www.google.com
 ```
 
 **On the Compute Node:**
 
 ```bash
 ping -c 4 controller
-ping -c 4 compute
+ping -c 4 network
+ping -c www.google.com
 ```
 
 ## 1.5 Create SSH Access:
