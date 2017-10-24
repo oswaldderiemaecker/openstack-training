@@ -1344,6 +1344,40 @@ systemctl status neutron-l3-agent.service
 systemctl status neutron-metadata-agent.service
 ```
 
+Configure the Network on Network Node:
+
+Creating the bridge (br-ex) interface.
+
+```bash 
+cd /etc/sysconfig/network-scripts/
+cp ifcfg-enp0s3 ifcfg-br-ex
+vi ifcfg-enp0s3
+
+DEVICE=enp0s3
+HWADDR=08:00:27:4b:53:57
+TYPE=OVSPort
+DEVICETYPE=ovs
+OVS_BRIDGE=br-ex
+ONBOOT=yes
+```
+
+```bash
+vi ifcfg-br-ex
+
+DEVICE=br-ex
+DEVICETYPE=ovs
+TYPE=OVSBridge
+BOOTPROTO=static
+IPADDR=192.168.1.90
+NETMASK=255.255.255.0
+GATEWAY=192.168.1.1
+ONBOOT=yes
+```
+
+```bash
+systemctl restart network
+```
+
 Verify OpenVSwitch is installed and Configured correctly:
 
 ```bash
