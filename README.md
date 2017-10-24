@@ -54,6 +54,12 @@ systemctl stop NetworkManager
 systemctl disable NetworkManager
 ```
 
+Disable SELinux using below command:
+
+```bash
+setenforce 0 ; sed -i 's/=enforcing/=disabled/g' /etc/sysconfig/selinux
+```
+
 ## 1.4 Upgrade the OS and reboot:
 
 ```bash
