@@ -8,14 +8,16 @@ For the Newton openstack setup we must have the three virtual machine ready with
 
 Each VM has a NAT Network and a Host-Only Adapter set to the same Adapter.
 
-For simplicity we will use the password rootroot for all passwords.
+For simplicity we will use the password **rootroot** for all passwords.
 
-# 1) Installation of base system on the VMs
+# 1 Base Installation
+
+## 1.1 Installation of base system on the VMs
 
 Get CentOs 7(https://www.centos.org/download/) and install it, configure the network and base settings to suite your
 configuration.
 
-# 2) Configure Hosts and the Hostname
+## 1.2 Configure Hosts and the Hostname
 
 On the controller Node:
 ```bash
@@ -41,13 +43,13 @@ echo '192.168.57.102 controller.example.com controller
 192.168.57.101 network.example.com network' >> /etc/hosts
 ```
 
-# 3) Upgrade the OS and reboot:
+## 1.3 Upgrade the OS and reboot:
 
 ```bash
 yum update -y ; reboot
 ```
 
-# 4) Verify connectivity
+## 1.4 Verify connectivity
 
 **On the controller Node:**
 
@@ -71,7 +73,7 @@ ping -c 4 controller
 ping -c 4 compute
 ```
 
-# 5) Create SSH Access:
+## 1.5 Create SSH Access:
 
 ```bash
 ssh-keygen
@@ -89,7 +91,7 @@ ssh root@compute.example.com
  ssh root@network.example.com
 ```
 
-# 6) Network Time Protocol (NTP) Setup
+## 1.6 Network Time Protocol (NTP) Setup
 
 **On the Controller Node:**
 
@@ -132,7 +134,7 @@ systemctl enable chronyd.service
 systemctl start chronyd.service
 ```
 
-# 7) Set OpenStack Newton Repository
+## 1.7 Set OpenStack Newton Repository
 
 **On all Nodes install:**
 
@@ -143,7 +145,7 @@ yum install python-openstackclient
 yum install openstack-selinux
 ```
 
-# 8) Install MariaDB
+## 1.8 Install MariaDB
 
 **On Controller node**
 
@@ -176,7 +178,7 @@ Secure the database service by running the mysql_secure_installation script.
 mysql_secure_installation
 ```
 
-# 9) RabbitMQ message queue Setup
+## 1.9 RabbitMQ message queue Setup
 
 **On Controller node**
 
@@ -203,7 +205,7 @@ Permit configuration, write, and read access for the openstack user:
 rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 ```
 
-# 10) Memcached setup
+## 1.10 Memcached setup
 
 **On Controller node**
 
@@ -218,7 +220,9 @@ systemctl enable memcached.service
 systemctl start memcached.service
 ```
 
-# 11) Installing Keystone
+# 2 Services Configuratins
+
+## 2.1.1 Installing Keystone
 
 **On Controller node**
 
@@ -308,7 +312,7 @@ export OS_AUTH_URL=http://controller:35357/v3
 export OS_IDENTITY_API_VERSION=3
 ```
 
-# 12) Create a domain, projects, users, and roles
+## 2.1.2 Create a domain, projects, users, and roles
 
 **On Controller node**
 
@@ -348,7 +352,7 @@ Add the user role to the demo project and user:
 openstack role add --project demo --user demo user
 ```
 
-# 13) Verify operation of the Identity service
+## 2.1.3 Verify operation of the Identity service
 
 **On Controller node**
 
@@ -374,7 +378,7 @@ As the demo user, request an authentication token:
 openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name demo --os-username demo token issue
 ```
 
-# 14) Image (glance) service install and configure
+## 2.2.1 Image (glance) service install and configure
 
 **On Controller node**
 
@@ -426,6 +430,14 @@ Edit the /etc/glance/glance-api.conf file and complete the following actions:
 
 ```
 [DEFAULT]
+bind_host = 0.0.0.0
+bind_port = 9292
+workers = 1
+image_cache_dir = /var/lib/glance/image-cache
+registry_host = 0.0.0.0
+debug = False
+log_file = /var/log/glance/api.log
+log_dir = /var/log/glance
 
 [database]
 connection = mysql+pymysql://glance:rootroot@10.0.2.15/glance
@@ -437,15 +449,15 @@ filesystem_store_datadir = /var/lib/glance/images/
 os_region_name=RegionOne
 
 [keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
-memcached_servers = controller:11211
+auth_uri = http://192.168.57.102:5000/v2.0
 auth_type = password
-project_domain_name = Default
-user_domain_name = Default
-project_name = service
-username = glance
-password = rootroot
+project_name=services
+username=glance
+password=rootroot
+auth_url=http://192.168.57.102:35357
+
+[oslo_policy]
+policy_file = /etc/glance/policy.json
 
 [paste_deploy]
 flavor = keystone
@@ -455,19 +467,26 @@ Edit the /etc/glance/glance-registry.conf file and complete the following action
 
 ```
 [DEFAULT]
+bind_host = 0.0.0.0
+bind_port = 9191
+workers = 1
+debug = False
+log_file = /var/log/glance/registry.log
+log_dir = /var/log/glance
 
 [database]
 connection = mysql+pymysql://glance:rootroot@10.0.2.15/glance
+
 [keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
-memcached_servers = controller:11211
+auth_uri = http://192.168.57.102:5000/v2.0
 auth_type = password
-project_domain_name = Default
-user_domain_name = Default
-project_name = service
-username = glance
-password = rootroot
+username=glance
+project_name=services
+password=rootroot
+auth_url=http://192.168.57.102:35357
+
+[oslo_policy]
+policy_file = /etc/glance/policy.json
 
 [paste_deploy]
 flavor = keystone
@@ -511,7 +530,7 @@ Confirm upload of the image and validate attributes:
 openstack image list
 ```
 
-# 15) Compute (nova) service install and configure on Controller node
+## 2.2.2 Compute (nova) service install and configure on Controller node
 
 **On Controller node**
 
@@ -581,39 +600,95 @@ Edit the /etc/nova/nova.conf file and complete the following actions:
 
 ```bash
 [DEFAULT]
-enabled_apis = osapi_compute,metadata
-transport_url = rabbit://openstack:rootroot@10.0.2.15
-auth_strategy = keystone
-my_ip = 192.168.57.102
-use_neutron = True
-firewall_driver = nova.virt.firewall.NoopFirewallDriver
+auth_strategy=keystone
+use_forwarded_for=False
+fping_path=/usr/sbin/fping
+rootwrap_config=/etc/nova/rootwrap.conf
+allow_resize_to_same_host=False
+default_floating_pool=public
+force_snat_range=0.0.0.0/0
+metadata_host=192.168.57.102
+dhcp_domain=novalocal
+use_neutron=True
+notify_api_faults=False
+state_path=/var/lib/nova
+scheduler_host_subset_size=1
+scheduler_use_baremetal_filters=False
+scheduler_available_filters=nova.scheduler.filters.all_filters
+scheduler_default_filters=RetryFilter,AvailabilityZoneFilter,RamFilter,DiskFilter,ComputeFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,ServerGroupAntiAffinityFilter,ServerGroupAffinityFilter,CoreFilter
+scheduler_weight_classes=nova.scheduler.weights.all_weighers
+scheduler_host_manager=host_manager
+scheduler_driver=filter_scheduler
+max_io_ops_per_host=8
+max_instances_per_host=50
+scheduler_max_attempts=3
+report_interval=10
+enabled_apis=osapi_compute,metadata
+osapi_compute_listen=0.0.0.0
+osapi_compute_listen_port=8774
+osapi_compute_workers=1
+metadata_listen=0.0.0.0
+metadata_listen_port=8775
+metadata_workers=1
+service_down_time=60
+vif_plugging_is_fatal=True
+vif_plugging_timeout=300
+firewall_driver=nova.virt.firewall.NoopFirewallDriver
+debug=False
+log_dir=/var/log/nova
+rpc_backend=rabbit
+image_service=nova.image.glance.GlanceImageService
+osapi_volume_listen=0.0.0.0
 
 [api_database]
-connection = mysql+pymysql://nova:rootroot@10.0.2.15/nova_api
+connection=mysql+pymysql://nova_api:rootroot@10.0.2.15/nova_api
+
+[cinder]
+catalog_info=volumev2:cinderv2:publicURL
+
+[conductor]
+workers=1
 
 [database]
-connection = mysql+pymysql://nova:rootroot@10.0.2.15/nova
+connection=mysql+pymysql://nova:rootroot@10.0.2.15/nova
 
 [glance]
-api_servers = http://controller:9292
+api_servers=192.168.57.102:9292
 
 [keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
-memcached_servers = controller:11211
-auth_type = password
-project_domain_name = Default
-user_domain_name = Default
-project_name = service
-username = nova
-password = rootroot
+auth_uri=http://192.168.57.102:5000/
+auth_type=password
+username=nova
+project_name=services
+auth_url=http://192.168.57.102:35357
+password=rootroot
+
+[libvirt]
+vif_driver=nova.virt.libvirt.vif.LibvirtGenericVIFDriver
 
 [oslo_concurrency]
-lock_path = /var/lib/nova/tmp
+lock_path=/var/lib/nova/tmp
+
+[oslo_messaging_rabbit]
+kombu_ssl_keyfile=
+kombu_ssl_certfile=
+kombu_ssl_ca_certs=
+rabbit_host=10.0.2.15
+rabbit_port=5672
+rabbit_use_ssl=False
+rabbit_userid=guest
+rabbit_password=guest
+
+[oslo_policy]
+policy_file=/etc/nova/policy.json
 
 [vnc]
-vncserver_listen = $my_ip
-vncserver_proxyclient_address = $my_ip
+novncproxy_base_url=http://0.0.0.0:6080/vnc_auto.html
+novncproxy_host=0.0.0.0
+novncproxy_port=6080
+
+[wsgi]
+api_paste_config=api-paste.ini
 ```
 
 Populate the Compute databases:
@@ -630,7 +705,9 @@ systemctl enable openstack-nova-api.service openstack-nova-consoleauth.service o
 systemctl start openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
 ```
 
-# 16) Compute (nova) service install and configure on Compute Node
+## 2.2.3 Compute (nova) service install and configure on Compute Node
+
+**On Compute node**
 
 Set OpenStack Newton Repository on the Compute Node
 
@@ -651,39 +728,71 @@ Edit the /etc/nova/nova.conf file and complete the following actions:
 
 ```
 [DEFAULT]
-enabled_apis = osapi_compute,metadata
-transport_url = rabbit://openstack:rootroot@10.0.2.15
-auth_strategy = keystone
-my_ip = 192.168.57.102
-use_neutron = True
-firewall_driver = nova.virt.firewall.NoopFirewallDriver
+auth_strategy=keystone
+rootwrap_config=/etc/nova/rootwrap.conf
+allow_resize_to_same_host=False
+reserved_host_memory_mb=512
+heal_instance_info_cache_interval=60
+force_snat_range=0.0.0.0/0
+metadata_host=192.168.57.102
+dhcp_domain=novalocal
+use_neutron=True
+notify_api_faults=False
+state_path=/var/lib/nova
+report_interval=10
+compute_manager=nova.compute.manager.ComputeManager
+service_down_time=60
+compute_driver=libvirt.LibvirtDriver
+vif_plugging_is_fatal=True
+vif_plugging_timeout=300
+firewall_driver=nova.virt.firewall.NoopFirewallDriver
+force_raw_images=True
+debug=False
+log_dir=/var/log/nova
+rpc_backend=rabbit
+image_service=nova.image.glance.GlanceImageService
+volume_api_class=nova.volume.cinder.API
 
 [api_database]
-connection = mysql+pymysql://nova:rootroot@10.0.2.15/nova_api
+connection=mysql+pymysql://nova_api:rootroot@192.168.57.102/nova_api
+
+[cinder]
+catalog_info=volumev2:cinderv2:publicURL
 
 [database]
-connection = mysql+pymysql://nova:rootroot@10.0.2.15/nova
+connection=mysql+pymysql://nova:rootroot@192.168.57.102/nova
 
 [glance]
-api_servers = http://controller:9292
+api_servers=192.168.57.102:9292
 
-[keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
-memcached_servers = controller:11211
-auth_type = password
-project_domain_name = Default
-user_domain_name = Default
-project_name = service
-username = nova
-password = rootroot
+[libvirt]
+virt_type=qemu
+inject_password=False
+inject_key=False
+inject_partition=-1
+live_migration_uri=qemu+tcp://%s/system
+cpu_mode=none
+vif_driver=nova.virt.libvirt.vif.LibvirtGenericVIFDriver
 
 [oslo_concurrency]
-lock_path = /var/lib/nova/tmp
+lock_path=/var/lib/nova/tmp
+
+[oslo_messaging_rabbit]
+kombu_ssl_keyfile=
+kombu_ssl_certfile=
+kombu_ssl_ca_certs=
+rabbit_host=192.168.57.102
+rabbit_port=5672
+rabbit_use_ssl=False
+rabbit_userid=guest
+rabbit_password=guest
 
 [vnc]
-vncserver_listen = $my_ip
-vncserver_proxyclient_address = $my_ip
+enabled=True
+keymap=en-us
+vncserver_listen=0.0.0.0
+vncserver_proxyclient_address=compute.example.com
+novncproxy_base_url=http://192.168.57.102:6080/vnc_auto.html
 ```
 
 Start the Compute service including its dependencies and configure them to start automatically when the system boots:
@@ -699,7 +808,7 @@ On the Controller Node Verify operation of the Compute service:
 openstack compute service list
 ```
 
-# 17) Networking (neutron) service install and setup
+## 2.3.1 Networking (neutron) service install and setup
 
 **On controller node**
 
@@ -748,7 +857,7 @@ openstack endpoint create --region RegionOne network internal http://controller:
 openstack endpoint create --region RegionOne network admin http://controller:9696
 ```
 
-# 18) Configure Neutron the Networking Self-service networks
+## 2.3.2 Configure Neutron the Networking Self-service networks
 
 Install the components:
 
@@ -769,8 +878,8 @@ service_plugins=router,metering
 allow_overlapping_ips=True
 notify_nova_on_port_status_changes=True
 notify_nova_on_port_data_changes=True
-api_workers=2
-rpc_workers=2
+api_workers=1
+rpc_workers=1
 router_scheduler_driver=neutron.scheduler.l3_agent_scheduler.ChanceScheduler
 l3_ha=False
 max_l3_agents_per_router=3
@@ -778,8 +887,7 @@ debug=False
 log_dir=/var/log/neutron
 rpc_backend=rabbit
 control_exchange=neutron
-#nova_url=http://192.168.57.102:8774/v2
-transport_url = rabbit://openstack:rootroot@10.0.2.15
+nova_url=http://192.168.57.102:8774/v2
 
 [agent]
 root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
@@ -788,18 +896,18 @@ root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
 connection=mysql+pymysql://neutron:rootroot@10.0.2.15/neutron
 
 [keystone_authtoken]
-auth_uri=http://controller:5000
-auth_url=http://controller:35357
+auth_uri=http://192.168.57.102:5000/v2.0
 auth_type=password
 project_name=services
+password=rootroot
 username=neutron
 project_domain_name=Default
 user_domain_name=Default
-password=rootroot
+auth_url=http://192.168.57.102:35357
 
 [nova]
 region_name=RegionOne
-auth_url=http://controller:35357
+auth_url=http://192.168.57.102:35357
 auth_type=password
 password=rootroot
 project_domain_id=default
@@ -810,6 +918,19 @@ username=nova
 
 [oslo_concurrency]
 lock_path=$state_path/lock
+
+[oslo_messaging_rabbit]
+kombu_ssl_keyfile=
+kombu_ssl_certfile=
+kombu_ssl_ca_certs=
+rabbit_host=10.0.2.15
+rabbit_port=5672
+rabbit_use_ssl=False
+rabbit_userid=guest
+rabbit_password=guest
+
+[oslo_policy]
+policy_file=/etc/neutron/policy.json
 ```
 
 Configure the Modular Layer 2 (ML2) plug-in:
@@ -836,20 +957,27 @@ enable_security_group = True
 
 Configure the Compute service to use the Networking service:
 
+**On both the Controller and Compute node!**
+
 Edit the /etc/nova/nova.conf file and perform the following actions:
 
+```bash
 [neutron]
-url = http://controller:9696
-auth_url = http://controller:35357
-auth_type = password
-project_domain_name = Default
-user_domain_name = Default
-region_name = RegionOne
-project_name = service
-username = neutron
-password = rootroot
-service_metadata_proxy = True
-metadata_proxy_shared_secret = rootroot
+url=http://192.168.57.102:9696
+region_name=RegionOne
+ovs_bridge=br-int
+extension_sync_interval=600
+service_metadata_proxy=True
+metadata_proxy_shared_secret=a365c13b40884b8e
+timeout=60
+auth_type=v3password
+auth_url=http://192.168.57.102:35357/v3
+project_name=services
+project_domain_name=Default
+username=neutron
+user_domain_name=Default
+password=rootroot
+```
 
 The Networking service initialization scripts expect a symbolic link /etc/neutron/plugin.ini pointing to the ML2 plug-in configuration file, /etc/neutron/plugins/ml2/ml2_conf.ini. If this symbolic link does not exist, create it using the following command:
 
