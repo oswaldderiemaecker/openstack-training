@@ -321,7 +321,7 @@ Set the environment:
 Create the service project:
 
 ```bash
-openstack project create --domain default --description "Service Project" service
+openstack project create --domain default --description "Service Project" services
 ```
 
 Create the demo project:
