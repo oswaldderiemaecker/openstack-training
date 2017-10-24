@@ -957,7 +957,7 @@ enable_security_group = True
 
 Configure the Compute service to use the Networking service:
 
-**On both the Controller**
+**On the Controller Node**
 
 Edit the /etc/nova/nova.conf file and perform the following actions:
 
@@ -1002,8 +1002,31 @@ Start the Networking services and configure them to start when the system boots.
 For both networking options:
 
 ```bash
-systemctl enable neutron-server.service neutron-dhcp-agent.service neutron-l3-agent.service neutron-metadata-agent.service
-systemctl start neutron-server.service neutron-dhcp-agent.service neutron-l3-agent.service neutron-metadata-agent.service
+systemctl enable neutron-server.service
+```
+
+```bash
+systemctl restart openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
+systemctl restart neutron-server.service
+systemctl restart openstack-glance-api.service openstack-glance-registry.service
+systemctl restart httpd.service memcached.service
+systemctl restart rabbitmq-server.service
+```
+
+Verify all is running fine:
+
+```bash
+systemctl status openstack-nova-api.service
+systemctl status openstack-nova-consoleauth.service
+systemctl status openstack-nova-scheduler.service
+systemctl status openstack-nova-conductor.service
+systemctl status openstack-nova-novncproxy.service
+systemctl status neutron-server.service
+systemctl status neutron-metadata-agent.service
+systemctl status openstack-glance-api.service
+systemctl status openstack-glance-registry.service
+systemctl status httpd.service memcached.service
+systemctl status rabbitmq-server.service
 ```
 
 ## 2.3.2 Configure Neutron on the Compute Node
@@ -1133,7 +1156,191 @@ systemctl restart neutron-openvswitch-agent.service
 systemctl restart neutron-ovs-cleanup.service
 ```
 
-Do the network Configuration:
+Verify all is running fine:
+
+```bash
+systemctl status openvswitch.service
+systemctl status neutron-openvswitch-agent.service
+systemctl status neutron-ovs-cleanup.service
+```
+
+## 2.3.3 Configure Neutron on the Network Node
+
+**On Network node**
+
+Install the components:
+
+```bash
+yum install openstack-neutron
+yum install openvswitch
+yum install openstack-neutron-openvswitch
+```
+
+Edit the /etc/neutron/neutron.conf file and complete the following actions:
+
+```bash
+[DEFAULT]
+bind_host=0.0.0.0
+auth_strategy=keystone
+core_plugin=neutron.plugins.ml2.plugin.Ml2Plugin
+service_plugins=router,metering
+allow_overlapping_ips=True
+debug=False
+log_dir=/var/log/neutron
+rpc_backend=rabbit
+control_exchange=neutron
+
+[agent]
+root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
+
+[keystone_authtoken]
+auth_uri=http://192.168.57.102:5000/v2.0
+auth_type=password
+project_name=services
+password=rootroot
+username=neutron
+project_domain_name=Default
+user_domain_name=Default
+auth_url=http://192.168.57.102:35357
+
+[oslo_concurrency]
+lock_path=$state_path/lock
+
+[oslo_messaging_rabbit]
+kombu_ssl_keyfile=
+kombu_ssl_certfile=
+kombu_ssl_ca_certs=
+rabbit_host=192.168.57.102
+rabbit_port=5672
+rabbit_use_ssl=False
+rabbit_userid=guest
+rabbit_password=guest
+```
+
+Configure the OpenVSwitch agent in /etc/neutron/plugins/ml2/openvswitch_agent.ini:
+
+```bash
+[DEFAULT]
+
+[agent]
+tunnel_types =vxlan
+vxlan_udp_port = 4789
+l2_population = False
+drop_flows_on_start = False
+
+[ovs]
+integration_bridge = br-int
+tunnel_bridge = br-tun
+local_ip = 10.0.2.15
+
+[securitygroup]
+firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+```
+
+Configure l3-agent by editing the /etc/neutron/l3_agent.ini file:
+
+```bash
+[DEFAULT]
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+agent_mode = legacy
+external_network_bridge =br-ex
+debug = False
+```
+
+Configure dhcp-agent by editing the /etc/neutron/dhcp_agent.ini file:
+
+```bash
+[DEFAULT]
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+resync_interval = 30
+dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
+enable_isolated_metadata = False
+enable_metadata_network = False
+debug = False
+root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
+state_path=/var/lib/neutron
+```
+
+Configure the metadata-agent by editing the /etc/neutron/metadata_agent.ini file:
+
+```bash
+[DEFAULT]
+nova_metadata_ip = 192.168.57.102
+metadata_proxy_shared_secret = rootroot
+metadata_workers = 1
+debug = False
+```
+
+Configure the metadata-agent by editing the /etc/neutron/metering_agent.ini file:
+
+```bash
+[DEFAULT]
+driver = neutron.services.metering.drivers.noop.noop_driver.NoopMeteringDriver
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+debug = False
+```
+
+Restart the services:
+
+```bash
+systemctl restart openvswitch.service
+systemctl restart neutron-openvswitch-agent.service
+systemctl restart neutron-ovs-cleanup.service
+systemctl restart neutron-dhcp-agent.service
+systemctl restart neutron-l3-agent.service
+systemctl restart neutron-metadata-agent.service
+```
+
+Verify all is running fine:
+
+```bash
+systemctl status openvswitch.service
+systemctl status neutron-openvswitch-agent.service
+systemctl status neutron-ovs-cleanup.service
+systemctl status neutron-dhcp-agent.service
+systemctl status neutron-l3-agent.service
+systemctl status neutron-metadata-agent.service
+```
+
+Verify OpenVSwitch is installed and Configured correctly:
+
+```bash
+ovs-vsctl show
+```
+
+Should output:
+
+```
+73564bd7-9471-402e-892a-1bd3c518da78
+    Manager "ptcp:6640:127.0.0.1"
+        is_connected: true
+    Bridge br-tun
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+        fail_mode: secure
+        Port br-tun
+            Interface br-tun
+                type: internal
+        Port patch-int
+            Interface patch-int
+                type: patch
+                options: {peer=patch-tun}
+    Bridge br-int
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+        fail_mode: secure
+        Port br-int
+            Interface br-int
+                type: internal
+        Port patch-tun
+            Interface patch-tun
+                type: patch
+                options: {peer=patch-int}
+    ovs_version: "2.6.1"
+```
+
+
+## 2.4.1 Do the network Configuration:
 
 **On the Controller:**
 
@@ -1148,7 +1355,7 @@ neutron router-create private-router
 neutron router-interface-add private-router private_subnet
 ```
 
-# 20) Dashboard install and configure
+## 2.5 Dashboard install and configure
 
 Install the packages:
 
@@ -1495,7 +1702,9 @@ openstack flavor create --ram 1024 --vcpus 1 --disk 1 --public t1.tiny
 
 systemctl restart neutron-server.service neutron-dhcp-agent.service neutron-metadata-agent.service neutron-l3-agent
 
-# 21) Restart everything
+# 3 Tips
+
+## 3.1.1 Restart everything
 
 **On the Controller Node:**
 
