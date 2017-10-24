@@ -1433,12 +1433,12 @@ d61c5814-4bce-41d6-a966-a4220282f1d1
 Create the base networks:
 
 ```bash
-neutron net-create public
-neutron subnet-create --name public_subnet public 172.24.4.224/28
-neutron net-create private
-neutron subnet-create --name private_subnet private 10.0.0.0/24
-neutron router-create private-router
-neutron router-interface-add private-router private_subnet
+openstack network create public
+openstack subnet create --network public --subnet-range 172.24.4.224/28 public_subnet
+openstack network create private
+openstack subnet create --network private --subnet-range 10.0.0.0/24 private_subnet
+openstack router create private-router
+openstack router add subnet private-router private_subnet
 ```
 
 ## 2.5 Dashboard install and configure
