@@ -88,6 +88,8 @@ ping -c 4 www.google.com
 
 ## 1.6 Create SSH Access:
 
+**On the controller Node:**
+
 ```bash
 ssh-keygen
 ssh-copy-id root@compute.example.com
