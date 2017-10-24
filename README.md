@@ -617,7 +617,7 @@ openstack user create --domain default --password-prompt nova
 Add the admin role to the nova user:
 
 ```bash
-openstack role add --project service --user nova admin
+openstack role add --project services --user nova admin
 ```
 
 Create the nova service entity:
