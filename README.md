@@ -1877,6 +1877,7 @@ systemctl restart openvswitch.service
 systemctl restart neutron-openvswitch-agent.service
 systemctl restart neutron-ovs-cleanup.service
 systemctl restart openstack-nova-compute
+systemctl restart libvirtd.service openstack-nova-compute.service
 ```
 
 Verify all is running fine:
