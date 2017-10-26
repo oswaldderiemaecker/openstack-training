@@ -1296,6 +1296,12 @@ external_network_bridge =br-ex
 debug = False
 ```
 
+Configure the OpenVSwitch br-ex Bridge
+
+```bash
+ovs-vsctl --may-exist add-br br-ex
+```
+
 Configure dhcp-agent by editing the /etc/neutron/dhcp_agent.ini file:
 
 ```bash
