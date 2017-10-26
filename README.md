@@ -165,6 +165,13 @@ MS Name/IP address         Stratum Poll Reach LastRx Last sample
 ^? controller.example.com        0   6     0     -     +0ns[   +0ns] +/-    0ns
 ```
 
+Update the hours on all Nodes:
+
+```bash
+yum install ntpdate
+ntpdate -u 0.europe.pool.ntp.org
+```
+
 ## 1.8 Set OpenStack Newton Repository
 
 **On all Nodes install:**
