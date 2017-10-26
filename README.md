@@ -1892,7 +1892,42 @@ Checks on the controller:
 
 ``bash
 openstack compute service list
++----+------------------+------------+----------+---------+-------+----------------------------+
+| ID | Binary           | Host       | Zone     | Status  | State | Updated At                 |
++----+------------------+------------+----------+---------+-------+----------------------------+
+|  1 | nova-consoleauth | controller | internal | enabled | up    | 2017-10-26T17:21:04.000000 |
+|  2 | nova-conductor   | controller | internal | enabled | up    | 2017-10-26T17:21:09.000000 |
+|  3 | nova-scheduler   | controller | internal | enabled | up    | 2017-10-26T17:21:04.000000 |
+|  6 | nova-compute     | compute    | nova     | enabled | up    | 2017-10-26T17:21:03.000000 |
++----+------------------+------------+----------+---------+-------+----------------------------+
+
 openstack network agent list
++---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
+| ID                  | Agent Type         | Host    | Availability Zone | Alive | State | Binary                |
++---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
+| 13169785-8a2b-4409- | Metadata agent     | network | None              | False | UP    | neutron-metadata-     |
+| 9193-9706a3e46bbf   |                    |         |                   |       |       | agent                 |
+| 1927f089-c418-452d- | DHCP agent         | network | nova              | False | UP    | neutron-dhcp-agent    |
+| 8e04-6109a11e849d   |                    |         |                   |       |       |                       |
+| 28154f9d-68f8-4527  | DHCP agent         | compute | nova              | True  | UP    | neutron-dhcp-agent    |
+| -9e7b-ff518b47f971  |                    |         |                   |       |       |                       |
+| 68b32216-2b42-47d1- | Open vSwitch agent | compute | None              | True  | UP    | neutron-openvswitch-  |
+| 9648-2f788275f6f4   |                    |         |                   |       |       | agent                 |
+| a4b480a6-b3fd-46da- | Open vSwitch agent | network | None              | False | UP    | neutron-openvswitch-  |
+| b6b3-e8dc3a133ae7   |                    |         |                   |       |       | agent                 |
+| abbfe6e9-a0e5-4cd9- | L3 agent           | network | nova              | False | UP    | neutron-l3-agent      |
+| b6b1-13c43bb2b31b   |                    |         |                   |       |       |                       |
+| da946807-fd3f-430b- | L3 agent           | compute | nova              | True  | UP    | neutron-l3-agent      |
+| bc1f-f25f63396cd9   |                    |         |                   |       |       |                       |
++---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
+
+openstack network list --external
++--------------------------------------+--------+--------------------------------------+
+| ID                                   | Name   | Subnets                              |
++--------------------------------------+--------+--------------------------------------+
+| 13eaf423-1901-4176-a184-e69a48f87586 | public | 89203467-67c0-42e4-ba55-f64387ea5ad4 |
++--------------------------------------+--------+--------------------------------------+
+
 ```
 
 OpenStack Ports:
@@ -1924,6 +1959,6 @@ ntpdate -u 0.europe.pool.ntp.org
 
 * Cinder
 * Floating IPs
-* ip netns exec
+* ip netns exec <- done
 * Swift
 
