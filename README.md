@@ -1876,7 +1876,7 @@ systemctl status neutron-metadata-agent.service
 systemctl restart openvswitch.service
 systemctl restart neutron-openvswitch-agent.service
 systemctl restart neutron-ovs-cleanup.service
-systemctl restart openstack-nova-compute
+systemctl restart openstack-nova-compute.service
 systemctl restart libvirtd.service openstack-nova-compute.service
 ```
 
@@ -1886,6 +1886,13 @@ Verify all is running fine:
 systemctl status openvswitch.service
 systemctl status neutron-openvswitch-agent.service
 systemctl status neutron-ovs-cleanup.service
+```
+
+Checks on the controller:
+
+``bash
+openstack compute service list
+openstack network agent list
 ```
 
 OpenStack Ports:
