@@ -1890,7 +1890,7 @@ systemctl status neutron-ovs-cleanup.service
 
 Checks on the controller:
 
-``bash
+```bash
 openstack compute service list
 +----+------------------+------------+----------+---------+-------+----------------------------+
 | ID | Binary           | Host       | Zone     | Status  | State | Updated At                 |
@@ -1935,6 +1935,52 @@ openstack hypervisor list
 |  1 | compute.example.com |
 +----+---------------------+
 ```
+
+Networking:
+
+```bash
+openstack network list
++--------------------------------------+---------+--------------------------------------+
+| ID                                   | Name    | Subnets                              |
++--------------------------------------+---------+--------------------------------------+
+| 13eaf423-1901-4176-a184-e69a48f87586 | public  | 89203467-67c0-42e4-ba55-f64387ea5ad4 |
+| d1617aa6-1645-4a11-bbfe-dbf0e299f6c7 | private | f11e2036-7191-492d-a677-89a1ed647185 |
++--------------------------------------+---------+--------------------------------------+
+
+openstack router list
++------------------------+----------------+--------+-------+-------------+-------+--------------------------+
+| ID                     | Name           | Status | State | Distributed | HA    | Project                  |
++------------------------+----------------+--------+-------+-------------+-------+--------------------------+
+| 715ad24d-31b8-4f4d-    | private-router | ACTIVE | UP    | False       | False | eb13e7091aab41b2942717a9 |
+| 95eb-3bff5ba6e4df      |                |        |       |             |       | 9313ff37                 |
++------------------------+----------------+--------+-------+-------------+-------+--------------------------+
+
+openstack router show private-router
++-------------------------+-----------------------------------------------------------------------------------------+
+| Field                   | Value                                                                                   |
++-------------------------+-----------------------------------------------------------------------------------------+
+| admin_state_up          | UP                                                                                      |
+| availability_zone_hints |                                                                                         |
+| availability_zones      | nova                                                                                    |
+| created_at              | 2017-10-26T16:47:47Z                                                                    |
+| description             |                                                                                         |
+| distributed             | False                                                                                   |
+| external_gateway_info   | {"network_id": "13eaf423-1901-4176-a184-e69a48f87586", "enable_snat": true,             |
+|                         | "external_fixed_ips": [{"subnet_id": "89203467-67c0-42e4-ba55-f64387ea5ad4",            |
+|                         | "ip_address": "172.24.4.232"}]}                                                         |
+| flavor_id               | None                                                                                    |
+| ha                      | False                                                                                   |
+| id                      | 715ad24d-31b8-4f4d-95eb-3bff5ba6e4df                                                    |
+| name                    | private-router                                                                          |
+| project_id              | eb13e7091aab41b2942717a99313ff37                                                        |
+| project_id              | eb13e7091aab41b2942717a99313ff37                                                        |
+| revision_number         | 11                                                                                      |
+| routes                  |                                                                                         |
+| status                  | ACTIVE                                                                                  |
+| updated_at              | 2017-10-26T18:22:40Z                                                                    |
++-------------------------+-----------------------------------------------------------------------------------------+
+```
+
 
 OpenStack Ports:
 
