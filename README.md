@@ -1428,7 +1428,7 @@ openstack network agent list
 Create the base networks:
 
 ```bash
-openstack network create public
+openstack network create --external public
 openstack subnet create --network public --subnet-range 172.24.4.224/28 public_subnet
 openstack network create private
 openstack subnet create --network private --subnet-range 10.0.0.0/24 private_subnet
