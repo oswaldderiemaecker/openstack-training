@@ -1928,6 +1928,12 @@ openstack network list --external
 | 13eaf423-1901-4176-a184-e69a48f87586 | public | 89203467-67c0-42e4-ba55-f64387ea5ad4 |
 +--------------------------------------+--------+--------------------------------------+
 
+openstack hypervisor list
++----+---------------------+
+| ID | Hypervisor Hostname |
++----+---------------------+
+|  1 | compute.example.com |
++----+---------------------+
 ```
 
 OpenStack Ports:
