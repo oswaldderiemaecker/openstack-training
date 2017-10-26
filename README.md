@@ -537,7 +537,7 @@ Create the image cache folder:
 mkdir -p /var/lib/glance/images/
 mkdir -p /var/lib/glance/image-cache
 chown -R glance:glance /var/lib/glance/images
-chown -R glance:glance /var/lib/glance/images-cache
+chown -R glance:glance /var/lib/glance/image-cache
 ```
 
 Populate the Image service database:
