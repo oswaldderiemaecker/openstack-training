@@ -1870,6 +1870,7 @@ systemctl status neutron-metadata-agent.service
 systemctl restart openvswitch.service
 systemctl restart neutron-openvswitch-agent.service
 systemctl restart neutron-ovs-cleanup.service
+systemctl restart openstack-nova-compute
 ```
 
 Verify all is running fine:
