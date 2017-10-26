@@ -1446,11 +1446,7 @@ Install the components:
 yum install openstack-cinder targetcli python-keystone
 ```
 
-
-
 Edit the /etc/cinder/cinder.conf file and complete the following actions:
-
-```bash
 
 
 ## 2.7 Dashboard install and configure
@@ -1794,6 +1790,12 @@ FILE_UPLOAD_TEMP_DIR = '/var/tmp'
 REST_API_REQUIRED_SETTINGS = ['OPENSTACK_HYPERVISOR_FEATURES',
                               'LAUNCH_INSTANCE_DEFAULTS',
                               'OPENSTACK_IMAGE_FORMATS']
+```
+
+Restart Apache:
+
+```bash
+systemctl restart httpd.service memcached.service
 ```
 
 Set permission on Horizon log:
