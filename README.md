@@ -1398,6 +1398,28 @@ d61c5814-4bce-41d6-a966-a4220282f1d1
     ovs_version: "2.6.1"
 ```
 
+**On the Controller:**
+
+Ensure all network agent are running:
+
+```bash
+openstack network agent list
++---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
+| ID                  | Agent Type         | Host    | Availability Zone | Alive | State | Binary                |
++---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
+| 13169785-8a2b-4409- | Metadata agent     | network | None              | True  | UP    | neutron-metadata-     |
+| 9193-9706a3e46bbf   |                    |         |                   |       |       | agent                 |
+| 1927f089-c418-452d- | DHCP agent         | network | nova              | True  | UP    | neutron-dhcp-agent    |
+| 8e04-6109a11e849d   |                    |         |                   |       |       |                       |
+| 68b32216-2b42-47d1- | Open vSwitch agent | compute | None              | True  | UP    | neutron-openvswitch-  |
+| 9648-2f788275f6f4   |                    |         |                   |       |       | agent                 |
+| a4b480a6-b3fd-46da- | Open vSwitch agent | network | None              | True  | UP    | neutron-openvswitch-  |
+| b6b3-e8dc3a133ae7   |                    |         |                   |       |       | agent                 |
+| abbfe6e9-a0e5-4cd9- | L3 agent           | network | nova              | True  | UP    | neutron-l3-agent      |
+| b6b1-13c43bb2b31b   |                    |         |                   |       |       |                       |
++---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
+```
+
 
 ## 2.4.1 Do the network Configuration:
 
