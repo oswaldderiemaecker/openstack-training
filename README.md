@@ -1407,7 +1407,24 @@ openstack router create private-router
 openstack router add subnet private-router private_subnet
 ```
 
-## 2.5 Dashboard install and configure
+## 2.5 Install and Configure Cinder
+
+**On Network node**
+
+Install the components:
+
+```bash
+yum install openstack-cinder targetcli python-keystone
+```
+
+
+
+Edit the /etc/cinder/cinder.conf file and complete the following actions:
+
+```bash
+
+
+## 2.7 Dashboard install and configure
 
 Install the packages:
 
