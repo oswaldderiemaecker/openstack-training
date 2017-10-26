@@ -145,7 +145,7 @@ yum install chrony
 Edit the /etc/chrony.conf file and configure the server:
 
 ```
-server controller
+server controller iburst
 ```
 
 Start the NTP service and configure it to start when the system boots:
