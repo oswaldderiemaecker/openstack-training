@@ -117,7 +117,7 @@ ssh root@network.example.com
 **On the Controller Node:**
 
 ```bash
-yum install chrony
+yum install chrony -y
 ```
 
 Edit the /etc/chrony.conf file and configure the server:
@@ -139,7 +139,7 @@ systemctl start chronyd.service
 **On Compute and Network node:**
 
 ```bash
-yum install chrony
+yum install chrony -y
 ```
 
 Edit the /etc/chrony.conf file and configure the server:
@@ -168,7 +168,7 @@ MS Name/IP address         Stratum Poll Reach LastRx Last sample
 Update the hours on all Nodes:
 
 ```bash
-yum install ntpdate
+yum install ntpdate -y
 ntpdate -u 0.europe.pool.ntp.org
 ```
 
@@ -220,7 +220,7 @@ mysql_secure_installation
 **On Controller node**
 
 ```bash
-yum install rabbitmq-server
+yum install rabbitmq-server -y
 ```
 
 Start the message queue service and configure it to start when the system boots:
@@ -247,7 +247,7 @@ rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 **On Controller node**
 
 ```bash
-yum install memcached python-memcached
+yum install memcached python-memcached -y
 ```
 
 Start the Memcached service and configure it to start when the system boots:
