@@ -700,6 +700,12 @@ Populate the Compute databases:
 su -s /bin/sh -c "cinder-manage db sync" cinder
 ```
 
+Create the volume folder:
+
+```bash
+mkdir -p /var/lib/cinder/volumes
+```
+
 Restart the service:
 
 ```bash
