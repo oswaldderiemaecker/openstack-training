@@ -1863,6 +1863,8 @@ Verify all is running fine:
 systemctl status openvswitch.service
 systemctl status neutron-openvswitch-agent.service
 systemctl status neutron-ovs-cleanup.service
+systemctl status openstack-nova-compute.service
+systemctl status libvirtd.service openstack-nova-compute.service
 ```
 
 Checks on the controller:
