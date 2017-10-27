@@ -806,7 +806,7 @@ image_service=nova.image.glance.GlanceImageService
 volume_api_class=nova.volume.cinder.API
 
 [api_database]
-connection=mysql+pymysql://nova_api:rootroot@controller.example.com/nova_api
+connection=mysql+pymysql://nova:rootroot@controller.example.com/nova_api
 
 [cinder]
 catalog_info=volumev2:cinderv2:publicURL
