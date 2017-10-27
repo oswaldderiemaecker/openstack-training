@@ -288,7 +288,7 @@ Edit the /etc/keystone/keystone.conf file and complete with the following:
 ```
 [DEFAULT]
 [database]
-connection = mysql+pymysql://keystone:rootroot@10.0.2.15/keystone
+connection = mysql+pymysql://keystone:rootroot@controller.example.com/keystone
 
 [token]
 provider = fernet
