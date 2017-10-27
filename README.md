@@ -645,11 +645,8 @@ storage_availability_zone = nova
 default_availability_zone = nova
 default_volume_type = iscsi
 enabled_backends = lvm
-backup_swift_url = http://192.168.178.93:8080/v1/AUTH_
-backup_swift_container = volumes_backup
 osapi_volume_listen = 0.0.0.0
 osapi_volume_workers = 1
-backup_driver = cinder.backup.drivers.swift
 nova_catalog_info = compute:nova:publicURL
 nova_catalog_admin_info = compute:nova:adminURL
 debug = False
@@ -657,16 +654,16 @@ log_dir = /var/log/cinder
 rpc_backend = rabbit
 control_exchange = openstack
 api_paste_config = /etc/cinder/api-paste.ini
-glance_host=192.168.178.93
+glance_host=controller.example.com
 
 [database]
-connection = mysql+pymysql://cinder:rootroot@192.168.178.93/cinder
+connection = mysql+pymysql://cinder:rootroot@controller.example.com/cinder
 
 [keystone_authtoken]
-auth_uri = http://192.168.178.93:5000
+auth_uri = http://controller.example.com:5000
 auth_type = password
 username=cinder
-auth_url=http://192.168.178.93:35357
+auth_url=http://controller.example.com:35357
 project_name=services
 password=rootroot
 
@@ -677,7 +674,7 @@ lock_path = /var/lib/cinder/tmp
 kombu_ssl_keyfile =
 kombu_ssl_certfile =
 kombu_ssl_ca_certs =
-rabbit_host = 192.168.178.93
+rabbit_host = 10.0.2.15
 rabbit_port = 5672
 rabbit_use_ssl = False
 rabbit_userid = guest
@@ -688,7 +685,7 @@ policy_file = /etc/cinder/policy.json
 
 [lvm]
 iscsi_helper=lioadm
-iscsi_ip_address=192.168.178.93
+iscsi_ip_address=controller.example.com
 volume_driver=cinder.volume.drivers.lvm.LVMVolumeDriver
 volumes_dir=/var/lib/cinder/volumes
 volume_backend_name=lvm
