@@ -321,7 +321,7 @@ Configure the Apache HTTP server:
 Edit the /etc/httpd/conf/httpd.conf file and configure the ServerName option to reference the controller node:
 
 ```
-ServerName controller
+ServerName controller.example.com
 ```
 
 Create a link to the /usr/share/keystone/wsgi-keystone.conf file:
