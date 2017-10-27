@@ -694,6 +694,12 @@ volumes_dir=/var/lib/cinder/volumes
 volume_backend_name=lvm
 ```
 
+Populate the Compute databases:
+
+```bash
+su -s /bin/sh -c "cinder-manage db sync" cinder
+```
+
 Restart the service:
 
 ```bash
