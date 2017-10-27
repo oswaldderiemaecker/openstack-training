@@ -1810,6 +1810,8 @@ Create Flavors:
 openstack flavor create --ram 1024 --vcpus 1 --disk 1 --public t1.tiny
 ```
 
+Restart all the services:
+
 **On the Controller Node:**
 
 ```bash
