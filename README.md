@@ -345,10 +345,13 @@ unset OS_SERVICE_TOKEN
     export OS_PASSWORD=rootroot
     export OS_AUTH_URL=http://192.168.57.102:5000/v3
     export PS1='[\u@\h \W(keystone_admin)]\$ '
-    export OS_IDENTITY_API_VERSION=3
 
 export OS_TENANT_NAME=admin
 export OS_REGION_NAME=RegionOne
+export OS_PROJECT_NAME=admin
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_IDENTITY_API_VERSION=3
 ```
 
 ## 2.1.2 Create a domain, projects, users, and roles
