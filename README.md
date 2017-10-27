@@ -1304,6 +1304,7 @@ debug = False
 Configure the OpenVSwitch br-ex Bridge
 
 ```bash
+systemctl restart openvswitch.service
 ovs-vsctl --may-exist add-br br-ex
 ```
 
