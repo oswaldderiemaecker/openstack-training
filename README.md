@@ -1949,6 +1949,10 @@ systemctl restart neutron-server.service
 systemctl restart openstack-glance-api.service openstack-glance-registry.service
 systemctl restart httpd.service memcached.service
 systemctl restart rabbitmq-server.service
+systemctl restart openstack-cinder-api.service
+systemctl restart openstack-cinder-scheduler.service 
+systemctl restart openstack-cinder-volume.service 
+systemctl restart openstack-cinder-backup.service
 ```
 
 Verify all is running fine:
@@ -1965,6 +1969,10 @@ systemctl status openstack-glance-api.service
 systemctl status openstack-glance-registry.service
 systemctl status httpd.service memcached.service
 systemctl status rabbitmq-server.service
+systemctl status openstack-cinder-api.service
+systemctl status openstack-cinder-scheduler.service 
+systemctl status openstack-cinder-volume.service 
+systemctl status openstack-cinder-backup.service
 ```
 
 On the Network Node:
