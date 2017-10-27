@@ -1443,6 +1443,7 @@ openstack network create private
 openstack subnet create --network private --subnet-range 10.0.0.0/24 private_subnet
 openstack router create private-router
 openstack router add subnet private-router private_subnet
+neutron router-gateway-set private-router public
 ```
 
 ## 2.5 Install and Configure Cinder
