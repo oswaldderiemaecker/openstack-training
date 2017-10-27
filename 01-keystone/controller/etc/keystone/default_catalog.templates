@@ -1,0 +1,137 @@
+# Keystone PasteDeploy configuration file.
+
+[filter:debug]
+use = egg:oslo.middleware#debug
+
+[filter:request_id]
+use = egg:oslo.middleware#request_id
+
+[filter:build_auth_context]
+use = egg:keystone#build_auth_context
+
+[filter:token_auth]
+use = egg:keystone#token_auth
+
+[filter:admin_token_auth]
+# This is deprecated in the M release and will be removed in the O release.
+# Use `keystone-manage bootstrap` and remove this from the pipelines below.
+use = egg:keystone#admin_token_auth
+
+[filter:json_body]
+use = egg:keystone#json_body
+
+[filter:cors]
+use = egg:oslo.middleware#cors
+oslo_config_project = keystone
+
+[filter:http_proxy_to_wsgi]
+use = egg:oslo.middleware#http_proxy_to_wsgi
+
+[filter:ec2_extension]
+use = egg:keystone#ec2_extension
+
+[filter:ec2_extension_v3]
+use = egg:keystone#ec2_extension_v3
+
+[filter:s3_extension]
+use = egg:keystone#s3_extension
+
+[filter:url_normalize]
+use = egg:keystone#url_normalize
+
+[filter:sizelimit]
+use = egg:oslo.middleware#sizelimit
+
+[filter:osprofiler]
+use = egg:osprofiler#osprofiler
+
+[app:public_service]
+use = egg:keystone#public_service
+
+[app:service_v3]
+use = egg:keystone#service_v3
+
+[app:admin_service]
+use = egg:keystone#admin_service
+
+[pipeline:public_api]
+# The last item in this pipeline must be public_service or an equivalent
+# application. It cannot be a filter.
+pipeline = cors sizelimit http_proxy_to_wsgi osprofiler url_normalize request_id admin_token_auth build_auth_context token_auth json_body ec2_extension public_service
+
+[pipeline:admin_api]
+# The last item in this pipeline must be admin_service or an equivalent
+# application. It cannot be a filter.
+pipeline = cors sizelimit http_proxy_to_wsgi osprofiler url_normalize request_id admin_token_auth build_auth_context token_auth json_body ec2_extension s3_extension admin_service
+
+[pipeline:api_v3]
+# The last item in this pipeline must be service_v3 or an equivalent
+# application. It cannot be a filter.
+pipeline = cors sizelimit http_proxy_to_wsgi osprofiler url_normalize request_id admin_token_auth build_auth_context token_auth json_body ec2_extension_v3 s3_extension service_v3
+
+[app:public_version_service]
+use = egg:keystone#public_version_service
+
+[app:admin_version_service]
+use = egg:keystone#admin_version_service
+
+[pipeline:public_version_api]
+pipeline = cors sizelimit osprofiler url_normalize public_version_service
+
+[pipeline:admin_version_api]
+pipeline = cors sizelimit osprofiler url_normalize admin_version_service
+
+[composite:main]
+use = egg:Paste#urlmap
+/v2.0 = public_api
+/v3 = api_v3
+/ = public_version_api
+
+[composite:admin]
+use = egg:Paste#urlmap
+/v2.0 = admin_api
+/v3 = api_v3
+/ = admin_version_api
+[root@controller keystone(keystone_admin)]# cat default_catalog.templates
+# config for templated.Catalog, using camelCase because I don't want to do
+# translations for keystone compat
+catalog.RegionOne.identity.publicURL = http://localhost:$(public_port)s/v2.0
+catalog.RegionOne.identity.adminURL = http://localhost:$(admin_port)s/v2.0
+catalog.RegionOne.identity.internalURL = http://localhost:$(public_port)s/v2.0
+catalog.RegionOne.identity.name = Identity Service
+
+# fake compute service for now to help novaclient tests work
+catalog.RegionOne.computev21.publicURL = http://localhost:8774/v2.1/$(tenant_id)s
+catalog.RegionOne.computev21.adminURL = http://localhost:8774/v2.1/$(tenant_id)s
+catalog.RegionOne.computev21.internalURL = http://localhost:8774/v2.1/$(tenant_id)s
+catalog.RegionOne.computev21.name = Compute Service V2.1
+
+catalog.RegionOne.volumev2.publicURL = http://localhost:8776/v2/$(tenant_id)s
+catalog.RegionOne.volumev2.adminURL = http://localhost:8776/v2/$(tenant_id)s
+catalog.RegionOne.volumev2.internalURL = http://localhost:8776/v2/$(tenant_id)s
+catalog.RegionOne.volumev2.name = Volume Service V2
+
+catalog.RegionOne.ec2.publicURL = http://localhost:8773/services/Cloud
+catalog.RegionOne.ec2.adminURL = http://localhost:8773/services/Admin
+catalog.RegionOne.ec2.internalURL = http://localhost:8773/services/Cloud
+catalog.RegionOne.ec2.name = EC2 Service
+
+catalog.RegionOne.image.publicURL = http://localhost:9292
+catalog.RegionOne.image.adminURL = http://localhost:9292
+catalog.RegionOne.image.internalURL = http://localhost:9292
+catalog.RegionOne.image.name = Image Service
+
+catalog.RegionOne.network.publicURL = http://localhost:9696
+catalog.RegionOne.network.adminURL = http://localhost:9696
+catalog.RegionOne.network.internalURL = http://localhost:9696
+catalog.RegionOne.network.name = Network Service
+
+catalog.RegionOne.orchestration.publicURL = http://localhost:8004/v1/$(tenant_id)s
+catalog.RegionOne.orchestration.adminURL = http://localhost:8004/v1/$(tenant_id)s
+catalog.RegionOne.orchestration.internalURL = http://localhost:8004/v1/$(tenant_id)s
+catalog.RegionOne.orchestration.name = Orchestration Service
+
+catalog.RegionOne.metering.publicURL = http://localhost:8777
+catalog.RegionOne.metering.adminURL = http://localhost:8777
+catalog.RegionOne.metering.internalURL = http://localhost:8777
+catalog.RegionOne.metering.name = Telemetry Service
