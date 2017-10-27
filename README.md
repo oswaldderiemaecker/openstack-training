@@ -583,6 +583,124 @@ Confirm upload of the image and validate attributes:
 openstack image list
 ```
 
+## 2.2.2 Cinder service install and configure on Controller node
+
+**On Controller node**
+
+Use the database access client to connect to the database server as the root user:
+
+```bash
+mysql -u root -p
+```
+
+```
+CREATE DATABASE cinder;
+GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'localhost' IDENTIFIED BY 'rootroot';
+GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'%' IDENTIFIED BY 'rootroot';
+```
+
+Create the cinder user:
+
+```bash
+openstack user create --domain default --password-prompt cinder
+```
+
+Add the admin role to the glance user and service project:
+
+```bash
+openstack role add --project services --user cinder admin
+```
+
+Create the glance service entity:
+
+```bash
+openstack service create --name cinder --description "OpenStack Block Storage" volume
+openstack service create --name cinderv2 --description "OpenStack Block Storage" volumev2
+
+```
+
+Create the Image service API endpoints:
+
+```bash
+openstack endpoint create --region RegionOne volume public http://controller.example.com:8776/v1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne volume internal http://controller.example.com:8776/v1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne volume admin http://controller.example.com:8776/v1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne volumev2 public http://controller.example.com:8776/v2/%\(tenant_id\)s
+openstack endpoint create --region RegionOne volumev2 internal http://controller.example.com:8776/v2/%\(tenant_id\)s
+openstack endpoint create --region RegionOne volumev2 admin http://controller.example.com:8776/v2/%\(tenant_id\)s
+```
+
+Install the packages:
+
+```bash
+yum install cinder-api cinder-scheduler -y
+```
+
+Edit the /etc/cinder/cinder.conf file and complete the following actions:
+
+```bash
+[DEFAULT]
+enable_v3_api = True
+storage_availability_zone = nova
+default_availability_zone = nova
+default_volume_type = iscsi
+enabled_backends = lvm
+backup_swift_url = http://192.168.178.93:8080/v1/AUTH_
+backup_swift_container = volumes_backup
+osapi_volume_listen = 0.0.0.0
+osapi_volume_workers = 1
+backup_driver = cinder.backup.drivers.swift
+nova_catalog_info = compute:nova:publicURL
+nova_catalog_admin_info = compute:nova:adminURL
+debug = False
+log_dir = /var/log/cinder
+rpc_backend = rabbit
+control_exchange = openstack
+api_paste_config = /etc/cinder/api-paste.ini
+glance_host=192.168.178.93
+
+[database]
+connection = mysql+pymysql://cinder:rootroot@192.168.178.93/cinder
+
+[keystone_authtoken]
+auth_uri = http://192.168.178.93:5000
+auth_type = password
+username=cinder
+auth_url=http://192.168.178.93:35357
+project_name=services
+password=rootroot
+
+[oslo_concurrency]
+lock_path = /var/lib/cinder/tmp
+
+[oslo_messaging_rabbit]
+kombu_ssl_keyfile =
+kombu_ssl_certfile =
+kombu_ssl_ca_certs =
+rabbit_host = 192.168.178.93
+rabbit_port = 5672
+rabbit_use_ssl = False
+rabbit_userid = guest
+rabbit_password = guest
+
+[oslo_policy]
+policy_file = /etc/cinder/policy.json
+
+[lvm]
+iscsi_helper=lioadm
+iscsi_ip_address=192.168.178.93
+volume_driver=cinder.volume.drivers.lvm.LVMVolumeDriver
+volumes_dir=/var/lib/cinder/volumes
+volume_backend_name=lvm
+```
+
+Restart the service:
+
+```bash
+service cinder-scheduler restart
+service cinder-api restart
+```
+
 ## 2.2.2 Compute (nova) service install and configure on Controller node
 
 **On Controller node**
