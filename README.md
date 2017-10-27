@@ -633,7 +633,7 @@ openstack endpoint create --region RegionOne volumev2 admin http://controller.ex
 Install the packages:
 
 ```bash
-yum install cinder-api cinder-scheduler -y
+yum install openstack-cinder -y
 ```
 
 Edit the /etc/cinder/cinder.conf file and complete the following actions:
@@ -697,8 +697,19 @@ volume_backend_name=lvm
 Restart the service:
 
 ```bash
-service cinder-scheduler restart
-service cinder-api restart
+systemctl restart openstack-cinder-api.service
+systemctl restart openstack-cinder-scheduler.service 
+systemctl restart openstack-cinder-volume.service 
+systemctl restart openstack-cinder-backup.service
+```
+
+Verify the service:
+
+```bash
+systemctl status openstack-cinder-api.service
+systemctl status openstack-cinder-scheduler.service 
+systemctl status openstack-cinder-volume.service 
+systemctl status openstack-cinder-backup.service
 ```
 
 ## 2.2.2 Compute (nova) service install and configure on Controller node
