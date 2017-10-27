@@ -1810,10 +1810,6 @@ Create Flavors:
 openstack flavor create --ram 1024 --vcpus 1 --disk 1 --public t1.tiny
 ```
 
-# 3 Tips
-
-## 3.1.1 Restart everything
-
 **On the Controller Node:**
 
 ```bash
@@ -1899,20 +1895,16 @@ openstack network agent list
 +---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
 | ID                  | Agent Type         | Host    | Availability Zone | Alive | State | Binary                |
 +---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
-| 13169785-8a2b-4409- | Metadata agent     | network | None              | False | UP    | neutron-metadata-     |
-| 9193-9706a3e46bbf   |                    |         |                   |       |       | agent                 |
-| 1927f089-c418-452d- | DHCP agent         | network | nova              | False | UP    | neutron-dhcp-agent    |
-| 8e04-6109a11e849d   |                    |         |                   |       |       |                       |
-| 28154f9d-68f8-4527  | DHCP agent         | compute | nova              | True  | UP    | neutron-dhcp-agent    |
-| -9e7b-ff518b47f971  |                    |         |                   |       |       |                       |
-| 68b32216-2b42-47d1- | Open vSwitch agent | compute | None              | True  | UP    | neutron-openvswitch-  |
-| 9648-2f788275f6f4   |                    |         |                   |       |       | agent                 |
-| a4b480a6-b3fd-46da- | Open vSwitch agent | network | None              | False | UP    | neutron-openvswitch-  |
-| b6b3-e8dc3a133ae7   |                    |         |                   |       |       | agent                 |
-| abbfe6e9-a0e5-4cd9- | L3 agent           | network | nova              | False | UP    | neutron-l3-agent      |
-| b6b1-13c43bb2b31b   |                    |         |                   |       |       |                       |
-| da946807-fd3f-430b- | L3 agent           | compute | nova              | True  | UP    | neutron-l3-agent      |
-| bc1f-f25f63396cd9   |                    |         |                   |       |       |                       |
+| 002a66db-4c2a-4b7f- | DHCP agent         | network | nova              | True  | UP    | neutron-dhcp-agent    |
+| be0c-3fafa02b0605   |                    |         |                   |       |       |                       |
+| 1f516dea-104f-43b9  | Open vSwitch agent | compute | None              | True  | UP    | neutron-openvswitch-  |
+| -bc7c-8e1611ffd7a5  |                    |         |                   |       |       | agent                 |
+| 38b2b976-c4bb-4b48- | Open vSwitch agent | network | None              | True  | UP    | neutron-openvswitch-  |
+| 8a33-232de0608e0d   |                    |         |                   |       |       | agent                 |
+| 67807e3d-3833-4a67- | L3 agent           | network | nova              | True  | UP    | neutron-l3-agent      |
+| 9086-a7cb23f81f00   |                    |         |                   |       |       |                       |
+| 7d2e2b57-eda7-470e- | Metadata agent     | network | None              | True  | UP    | neutron-metadata-     |
+| a6e4-020a55600d3a   |                    |         |                   |       |       | agent                 |
 +---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
 
 openstack network list --external
