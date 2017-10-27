@@ -411,13 +411,13 @@ unset OS_AUTH_URL OS_PASSWORD
 As the admin user, request an authentication token:
 
 ```bash
-openstack --os-auth-url http://controller:35357/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name admin --os-username admin token issue
+openstack --os-auth-url http://controller.example.com:35357/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name admin --os-username admin token issue
 ```
 
 As the demo user, request an authentication token:
 
 ```bash
-openstack --os-auth-url http://controller:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name demo --os-username demo token issue
+openstack --os-auth-url http://controller.example.com:5000/v3 --os-project-domain-name Default --os-user-domain-name Default --os-project-name demo --os-username demo token issue
 ```
 
 ## 2.2.1 Image (glance) service install and configure
@@ -457,9 +457,9 @@ openstack service create --name glance --description "OpenStack Image" image
 Create the Image service API endpoints:
 
 ```bash
-openstack endpoint create --region RegionOne image public http://controller:9292
-openstack endpoint create --region RegionOne image internal http://controller:9292
-openstack endpoint create --region RegionOne image admin http://controller:9292
+openstack endpoint create --region RegionOne image public http://controller.example.com:9292
+openstack endpoint create --region RegionOne image internal http://controller.example.com:9292
+openstack endpoint create --region RegionOne image admin http://controller.example.com:9292
 ```
 
 Install the packages:
@@ -638,9 +638,9 @@ openstack service create --name nova --description "OpenStack Compute" compute
 Create the Compute service API endpoints:
 
 ```bash
-openstack endpoint create --region RegionOne compute public http://controller:8774/v2.1/%\(tenant_id\)s
-openstack endpoint create --region RegionOne compute internal http://controller:8774/v2.1/%\(tenant_id\)s
-openstack endpoint create --region RegionOne compute admin http://controller:8774/v2.1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne compute public http://controller.example.com:8774/v2.1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne compute internal http://controller.example.com:8774/v2.1/%\(tenant_id\)s
+openstack endpoint create --region RegionOne compute admin http://controller.example.com:8774/v2.1/%\(tenant_id\)s
 ```
 
 Install the packages:
@@ -904,9 +904,9 @@ openstack service create --name neutron --description "OpenStack Networking" net
 Create the Networking service API endpoints:
 
 ```bash
-openstack endpoint create --region RegionOne network public http://controller:9696
-openstack endpoint create --region RegionOne network internal http://controller:9696
-openstack endpoint create --region RegionOne network admin http://controller:9696
+openstack endpoint create --region RegionOne network public http://controller.example.com:9696
+openstack endpoint create --region RegionOne network internal http://controller.example.com:9696
+openstack endpoint create --region RegionOne network admin http://controller.example.com:9696
 ```
 
 ## 2.3.2 Configure Neutron the Networking Self-service networks
@@ -1474,7 +1474,7 @@ CACHES = {
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-OPENSTACK_KEYSTONE_URL = "http://192.168.57.102:5000/v2.0"
+OPENSTACK_KEYSTONE_URL = "http://controller.example.com:5000/v2.0"
 OPENSTACK_KEYSTONE_DEFAULT_ROLE = "_member_"
 
 OPENSTACK_KEYSTONE_BACKEND = {
