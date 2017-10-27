@@ -22,25 +22,25 @@ configuration.
 On the controller Node:
 ```bash
 echo 'controller' > /etc/hostname
-echo '192.168.57.102 controller.example.com controller
-192.168.57.100 compute.example.com compute
-192.168.57.101 network.example.com network' >> /etc/hosts
+echo '192.168.178.93 controller.example.com controller
+192.168.178.95 compute.example.com compute
+192.168.178.94 network.example.com network' >> /etc/hosts
 ```
 
 On the Network Node:
 ```bash
 echo 'network' > /etc/hostname
-echo '192.168.57.102 controller.example.com controller
-192.168.57.100 compute.example.com compute
-192.168.57.101 network.example.com network' >> /etc/hosts
+echo '192.168.178.93 controller.example.com controller
+192.168.178.95 compute.example.com compute
+192.168.178.94 network.example.com network' >> /etc/hosts
 ```
 
 On the Compute Node:
 ```bash
 echo 'compute' > /etc/hostname
-echo '192.168.57.102 controller.example.com controller
-192.168.57.100 compute.example.com compute
-192.168.57.101 network.example.com network' >> /etc/hosts
+echo '192.168.178.93 controller.example.com controller
+192.168.178.95 compute.example.com compute
+192.168.178.94 network.example.com network' >> /etc/hosts
 ```
 
 ## 1.3 Stop and disable firewalld & NetworkManager Service
