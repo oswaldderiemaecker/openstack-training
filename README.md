@@ -911,6 +911,8 @@ openstack endpoint create --region RegionOne network admin http://controller:969
 
 ## 2.3.2 Configure Neutron the Networking Self-service networks
 
+**On the Controller Node**
+
 Install the components:
 
 ```bash
