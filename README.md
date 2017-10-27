@@ -179,7 +179,7 @@ ntpdate -u 0.europe.pool.ntp.org
 ```bash
 yum install centos-release-openstack-newton -y
 yum update -y
-yum install python-openstackclient
+yum install python-openstackclient -y
 ```
 
 ## 1.9 Install MariaDB
@@ -187,7 +187,7 @@ yum install python-openstackclient
 **On Controller node**
 
 ```bash
-yum install mariadb mariadb-server python2-PyMySQL
+yum install mariadb mariadb-server python2-PyMySQL -y
 ```
 
 Create and edit the /etc/my.cnf.d/openstack.cnf file
@@ -280,7 +280,7 @@ GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY 'rootroot';
 Install KeyStone:
 
 ```bash
-yum install openstack-keystone httpd mod_wsgi
+yum install openstack-keystone httpd mod_wsgi -y
 ```
 
 Edit the /etc/keystone/keystone.conf file and complete with the following:
@@ -465,7 +465,7 @@ openstack endpoint create --region RegionOne image admin http://controller:9292
 Install the packages:
 
 ```bash
-yum install openstack-glance
+yum install openstack-glance -y
 ```
 
 Edit the /etc/glance/glance-api.conf file and complete the following actions:
@@ -646,7 +646,7 @@ openstack endpoint create --region RegionOne compute admin http://controller:877
 Install the packages:
 
 ```bash
-yum install openstack-nova-api openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler
+yum install openstack-nova-api openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler -y
 ```
 
 Edit the /etc/nova/nova.conf file and complete the following actions:
@@ -767,13 +767,13 @@ Set OpenStack Newton Repository on the Compute Node
 ```bash
 yum install centos-release-openstack-newton -y
 yum update -y
-yum install python-openstackclient
+yum install python-openstackclient -y
 ```
 
 Install the packages:
 
 ```bash
-yum install openstack-nova-compute
+yum install openstack-nova-compute -y
 ```
 
 Edit the /etc/nova/nova.conf file and complete the following actions:
@@ -914,7 +914,7 @@ openstack endpoint create --region RegionOne network admin http://controller:969
 Install the components:
 
 ```bash
-yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-common
+yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-common -y
 ```
 
 Configure the server component
@@ -1088,9 +1088,9 @@ systemctl status rabbitmq-server.service
 Install the components:
 
 ```bash
-yum install openstack-neutron
-yum install openvswitch
-yum install openstack-neutron-openvswitch
+yum install openstack-neutron -y
+yum install openvswitch -y
+yum install openstack-neutron-openvswitch -y
 ```
 
 Edit the /etc/neutron/neutron.conf file and complete the following actions:
@@ -1223,9 +1223,9 @@ Should output:
 Install the components:
 
 ```bash
-yum install openstack-neutron
-yum install openvswitch
-yum install openstack-neutron-openvswitch
+yum install openstack-neutron -y
+yum install openvswitch -y
+yum install openstack-neutron-openvswitch -y
 ```
 
 Edit the /etc/neutron/neutron.conf file and complete the following actions:
@@ -1453,7 +1453,7 @@ neutron router-gateway-set private-router public
 Install the components:
 
 ```bash
-yum install openstack-cinder targetcli python-keystone
+yum install openstack-cinder targetcli python-keystone -y
 ```
 
 Edit the /etc/cinder/cinder.conf file and complete the following actions:
@@ -1464,7 +1464,7 @@ Edit the /etc/cinder/cinder.conf file and complete the following actions:
 Install the packages:
 
 ```bash
-yum install openstack-dashboard
+yum install openstack-dashboard -y
 ```
 
 Edit the /etc/openstack-dashboard/local_settings file and complete the following actions:
