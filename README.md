@@ -1159,7 +1159,7 @@ drop_flows_on_start = False
 [ovs]
 integration_bridge = br-int
 tunnel_bridge = br-tun
-local_ip = compute.example.com
+local_ip = 192.168.178.95
 
 [securitygroup]
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
@@ -1272,7 +1272,7 @@ drop_flows_on_start = False
 [ovs]
 integration_bridge = br-int
 tunnel_bridge = br-tun
-local_ip = network.example.com
+local_ip = 192.168.178.94
 
 [securitygroup]
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
