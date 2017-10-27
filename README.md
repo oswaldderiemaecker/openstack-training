@@ -310,9 +310,9 @@ keystone-manage credential_setup --keystone-user keystone --keystone-group keyst
 Bootstrap the Identity service:
 
 ```bash
-keystone-manage bootstrap --bootstrap-password rootroot --bootstrap-admin-url http://controller:35357/v3/ \
-                          --bootstrap-internal-url http://controller:35357/v3/ \
-                          --bootstrap-public-url http://controller:5000/v3/ \
+keystone-manage bootstrap --bootstrap-password rootroot --bootstrap-admin-url http://controller.example.com:35357/v3/ \
+                          --bootstrap-internal-url http://controller.example.com:35357/v3/ \
+                          --bootstrap-public-url http://controller.example.com:5000/v3/ \
                           --bootstrap-region-id RegionOne
 ```
 
