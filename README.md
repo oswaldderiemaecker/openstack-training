@@ -754,6 +754,44 @@ systemctl status openstack-cinder-volume.service
 systemctl status openstack-cinder-backup.service
 ```
 
+## 2.2.2 Swift service install and configure on Controller node
+
+**On Controller node**
+
+Create the cinder user:
+
+```bash
+openstack user create --domain default --password-prompt swift
+```
+
+Add the admin role to the glance user and service project:
+
+```bash
+openstack role add --project service --user swift admin
+```
+
+Create the glance service entity:
+
+```bash
+openstack service create --name swift --description "OpenStack Object Storage" object-store
+```
+
+Create the Image service API endpoints:
+
+```bash
+openstack endpoint create --region RegionOne object-store public http://controller.example.com:8080/v1/AUTH_%\(tenant_id\)s
+openstack endpoint create --region RegionOne object-store internal http://controller.example.com:8080/v1/AUTH_%\(tenant_id\)s
+openstack endpoint create --region RegionOne object-store admin http://controller.example.com:8080/v1
+```
+
+Install the packages:
+
+```bash
+yum install openstack-swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware memcached -y
+```
+
+
+
 ## 2.2.2 Compute (nova) service install and configure on Controller node
 
 **On Controller node**
