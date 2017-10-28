@@ -3,6 +3,7 @@ I am using the Mac for installation and have the VirtualBox installed.
 For the Newton openstack setup we must have the three virtual machine ready with atleast below requirement:
 
 * Controller Node: 2 processor, 4 GB memory, and 5 GB storage (192.168.178.93)
+  * Create a second HDD of 10 GB
 * Compute Node: 2 processor, 4 GB memory, and 20 GB storage (192.168.178.95)
 * Network Node: 1 processor, 2 GB memory, and 5 GB storage (192.168.178.94)
 
@@ -685,7 +686,7 @@ policy_file = /etc/cinder/policy.json
 
 [lvm]
 iscsi_helper=lioadm
-iscsi_ip_address=controller.example.com
+iscsi_ip_address=192.168.178.93
 volume_driver=cinder.volume.drivers.lvm.LVMVolumeDriver
 volumes_dir=/var/lib/cinder/volumes
 volume_backend_name=lvm
@@ -703,15 +704,32 @@ Create the volume folder:
 mkdir -p /var/lib/cinder/volumes
 ```
 
-For this tutorial, we will use a file backed block storage. We use a file and mount it as a block device via the loopback system. On a production environment we would use a dedicated disk or use diffrent storage backends like ceph, hnas_iscsi ,hnas_nfs, iscsi, lvm or nfs.
+Lets create the LVM Volume with the second disk sdb.
+
+Verify the disk is attached:
 
 ```bash
-free_device=$(losetup -f)
-fallocate -l 3G /var/lib/cinder/cinder-volumes
-losetup $free_device /var/lib/cinder/cinder-volumes
-pvcreate $free_device
-vgcreate cinder-volumes $free_device
+fdisk -l
+Disk /dev/sdb: 10.7 GB, 10737418240 bytes, 20971520 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+```
+
+Create the LVM volume:
+
+```bash
+pvcreate /dev/sdb
+vgcreate cinder-volumes /dev/sdb
 vgdisplay
+```
+
+Edit the file /etc/lvm/lvm.conf:
+
+```bash
+devices {
+...
+filter = [ "a/sdb/", "r/.*/"]
 ```
 
 Restart the service:
@@ -735,6 +753,44 @@ systemctl status openstack-cinder-scheduler.service
 systemctl status openstack-cinder-volume.service 
 systemctl status openstack-cinder-backup.service
 ```
+
+## 2.2.2 Swift service install and configure on Controller node
+
+**On Controller node**
+
+Create the cinder user:
+
+```bash
+openstack user create --domain default --password-prompt swift
+```
+
+Add the admin role to the glance user and service project:
+
+```bash
+openstack role add --project service --user swift admin
+```
+
+Create the glance service entity:
+
+```bash
+openstack service create --name swift --description "OpenStack Object Storage" object-store
+```
+
+Create the Image service API endpoints:
+
+```bash
+openstack endpoint create --region RegionOne object-store public http://controller.example.com:8080/v1/AUTH_%\(tenant_id\)s
+openstack endpoint create --region RegionOne object-store internal http://controller.example.com:8080/v1/AUTH_%\(tenant_id\)s
+openstack endpoint create --region RegionOne object-store admin http://controller.example.com:8080/v1
+```
+
+Install the packages:
+
+```bash
+yum install openstack-swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware memcached -y
+```
+
+
 
 ## 2.2.2 Compute (nova) service install and configure on Controller node
 
@@ -2117,6 +2173,18 @@ openstack router show private-router
 +-------------------------+-----------------------------------------------------------------------------------------+
 ```
 
+Block Storage:
+
+```bash
+openstack volume service list
++------------------+----------------+------+---------+-------+----------------------------+
+| Binary           | Host           | Zone | Status  | State | Updated At                 |
++------------------+----------------+------+---------+-------+----------------------------+
+| cinder-backup    | controller     | nova | enabled | up    | 2017-10-28T13:12:12.000000 |
+| cinder-scheduler | controller     | nova | enabled | up    | 2017-10-28T13:12:53.000000 |
+| cinder-volume    | controller@lvm | nova | enabled | up    | 2017-10-28T13:12:49.000000 |
++------------------+----------------+------+---------+-------+----------------------------+
+```
 
 OpenStack Ports:
 
