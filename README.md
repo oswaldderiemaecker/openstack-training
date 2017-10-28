@@ -717,6 +717,10 @@ vgdisplay
 Restart the service:
 
 ```bash
+systemctl enable openstack-cinder-api.service
+systemctl enable openstack-cinder-scheduler.service 
+systemctl enable openstack-cinder-volume.service 
+systemctl enable openstack-cinder-backup.service
 systemctl restart openstack-cinder-api.service
 systemctl restart openstack-cinder-scheduler.service 
 systemctl restart openstack-cinder-volume.service 
@@ -1582,19 +1586,6 @@ openstack router create private-router
 openstack router add subnet private-router private_subnet
 neutron router-gateway-set private-router public
 ```
-
-## 2.5 Install and Configure Cinder
-
-**On Network node**
-
-Install the components:
-
-```bash
-yum install openstack-cinder targetcli python-keystone -y
-```
-
-Edit the /etc/cinder/cinder.conf file and complete the following actions:
-
 
 ## 2.7 Dashboard install and configure
 
