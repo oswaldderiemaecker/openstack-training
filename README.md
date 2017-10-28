@@ -2,8 +2,8 @@ I am using the Mac for installation and have the VirtualBox installed.
 
 For the Newton openstack setup we must have the three virtual machine ready with atleast below requirement:
 
-* Controller Node: 2 processor, 4 GB memory, and 10 GB storage (192.168.178.93)
-  * Create a second HDD of 10 GB
+* Controller Node: 2 processor, 4 GB memory, and 20 GB storage (192.168.178.93)
+  * Create a second HDD of 20 GB (Dynamically Allocated)
 * Compute Node: 2 processor, 4 GB memory, and 20 GB storage (192.168.178.95)
 * Network Node: 1 processor, 1 GB memory, and 5 GB storage (192.168.178.94)
 
