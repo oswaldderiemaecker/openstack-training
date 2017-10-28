@@ -2135,6 +2135,18 @@ openstack router show private-router
 +-------------------------+-----------------------------------------------------------------------------------------+
 ```
 
+Block Storage:
+
+```bash
+openstack volume service list
++------------------+----------------+------+---------+-------+----------------------------+
+| Binary           | Host           | Zone | Status  | State | Updated At                 |
++------------------+----------------+------+---------+-------+----------------------------+
+| cinder-backup    | controller     | nova | enabled | up    | 2017-10-28T13:12:12.000000 |
+| cinder-scheduler | controller     | nova | enabled | up    | 2017-10-28T13:12:53.000000 |
+| cinder-volume    | controller@lvm | nova | enabled | up    | 2017-10-28T13:12:49.000000 |
++------------------+----------------+------+---------+-------+----------------------------+
+```
 
 OpenStack Ports:
 
