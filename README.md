@@ -210,6 +210,7 @@ Start the database service and configure it to start when the system boots:
 ```bash
 systemctl enable mariadb.service
 systemctl start mariadb.service
+systemctl status mariadb.service
 ```
 
 Secure the database service by running the mysql_secure_installation script.
@@ -231,6 +232,7 @@ Start the message queue service and configure it to start when the system boots:
 ```bash
 systemctl enable rabbitmq-server.service
 systemctl start rabbitmq-server.service
+systemctl status rabbitmq-server.service
 ```
 
 Adding the openstack user:
@@ -258,6 +260,7 @@ Start the Memcached service and configure it to start when the system boots:
 ```bash
 systemctl enable memcached.service
 systemctl start memcached.service
+systemctl status memcached.service
 ```
 
 # 2 Services Configuratins
@@ -338,6 +341,7 @@ Start the Apache HTTP service and configure it to start when the system boots:
 ```bash
 systemctl enable httpd.service
 systemctl start httpd.service
+systemctl status httpd.service
 ```
 
 Configure the administrative account by creating a keystonerc_admin file
