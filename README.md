@@ -1069,6 +1069,7 @@ Start the Compute service including its dependencies and configure them to start
 ```bash
 systemctl enable libvirtd.service openstack-nova-compute.service
 systemctl start libvirtd.service openstack-nova-compute.service
+systemctl status libvirtd.service openstack-nova-compute.service
 ```
 
 On the Controller Node Verify operation of the Compute service:
