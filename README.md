@@ -566,14 +566,14 @@ Now download the cirros source image:
 
 ```bash
 sudo yum -y install wget
-wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
+wget http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img  
 wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
 ```
 
 Upload the image to the Image service using the QCOW2 disk format, bare container format, and public visibility so all projects can access it:
 
 ```bash
-openstack image create "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --public
+openstack image create "cirros" --file cirros-0.3.5-x86_64-disk.img --disk-format qcow2 --container-format bare --public
 openstack image create "CentOS-7" --file CentOS-7-x86_64-GenericCloud.qcow2 --disk-format qcow2 --container-format bare --public
 ```
 
