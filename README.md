@@ -703,6 +703,17 @@ Create the volume folder:
 mkdir -p /var/lib/cinder/volumes
 ```
 
+For this tutorial, we will use a file backed block storage. We use a file and mount it as a block device via the loopback system. On a production environment we would use a dedicated disk or use diffrent storage backends like ceph, hnas_iscsi ,hnas_nfs, iscsi, lvm or nfs.
+
+```bash
+free_device=$(losetup -f)
+fallocate -l 3G /var/lib/cinder/cinder-volumes
+losetup $free_device /var/lib/cinder/cinder-volumes
+pvcreate $free_device
+vgcreate cinder-volumes $free_device
+vgdisplay
+```
+
 Restart the service:
 
 ```bash
