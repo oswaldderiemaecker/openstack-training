@@ -633,7 +633,7 @@ openstack endpoint create --region RegionOne volumev2 admin http://controller.ex
 Install the packages:
 
 ```bash
-yum install openstack-cinder -y
+yum install openstack-cinder targetcli -y
 ```
 
 Edit the /etc/cinder/cinder.conf file and complete the following actions:
