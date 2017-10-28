@@ -561,6 +561,7 @@ Start the Image services and configure them to start when the system boots:
 ```bash
 systemctl enable openstack-glance-api.service openstack-glance-registry.service
 systemctl start openstack-glance-api.service openstack-glance-registry.service
+systemctl status openstack-glance-api.service openstack-glance-registry.service
 ```
 
 Verify the Glance Service is running:
