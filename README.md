@@ -3,6 +3,7 @@ I am using the Mac for installation and have the VirtualBox installed.
 For the Newton openstack setup we must have the three virtual machine ready with atleast below requirement:
 
 * Controller Node: 2 processor, 4 GB memory, and 5 GB storage (192.168.178.93)
+  * Create a second HDD of 10 GB
 * Compute Node: 2 processor, 4 GB memory, and 20 GB storage (192.168.178.95)
 * Network Node: 1 processor, 2 GB memory, and 5 GB storage (192.168.178.94)
 
@@ -703,15 +704,32 @@ Create the volume folder:
 mkdir -p /var/lib/cinder/volumes
 ```
 
-For this tutorial, we will use a file backed block storage. We use a file and mount it as a block device via the loopback system. On a production environment we would use a dedicated disk or use diffrent storage backends like ceph, hnas_iscsi ,hnas_nfs, iscsi, lvm or nfs.
+Lets create the LVM Volume with the second disk sdb.
+
+Verify the disk is attached:
 
 ```bash
-free_device=$(losetup -f)
-fallocate -l 3G /var/lib/cinder/cinder-volumes
-losetup $free_device /var/lib/cinder/cinder-volumes
-pvcreate $free_device
-vgcreate cinder-volumes $free_device
+fdisk -l
+Disk /dev/sdb: 10.7 GB, 10737418240 bytes, 20971520 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+```
+
+Create the LVM volume:
+
+```bash
+pvcreate /dev/sdb
+vgcreate cinder-volumes /dev/sdb
 vgdisplay
+```
+
+Edit the file /etc/lvm/lvm.conf:
+
+```bash
+devices {
+...
+filter = [ "a/sdb/", "r/.*/"]
 ```
 
 Restart the service:
