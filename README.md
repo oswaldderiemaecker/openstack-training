@@ -686,7 +686,7 @@ policy_file = /etc/cinder/policy.json
 
 [lvm]
 iscsi_helper=lioadm
-iscsi_ip_address=controller.example.com
+iscsi_ip_address=192.168.178.93
 volume_driver=cinder.volume.drivers.lvm.LVMVolumeDriver
 volumes_dir=/var/lib/cinder/volumes
 volume_backend_name=lvm
