@@ -11,6 +11,8 @@ Each VM has a NAT Network and a Host-Only Adapter set to the same Adapter.
 
 For simplicity we will use the password **rootroot** for all passwords.
 
+It is recommended to make snapshots often so you can go back if any goes wrong.
+
 # 1 Base Installation
 
 ## 1.1 Installation of base system on the VMs
