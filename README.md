@@ -1513,6 +1513,42 @@ systemctl restart openvswitch.service
 ovs-vsctl --may-exist add-br br-ex
 ```
 
+Edit the networking file /etc/sysconfig/network-scripts/ifcfg-br-ex
+
+```bash
+DEVICE=br-ex
+DEVICETYPE=ovs
+TYPE=OVSBridge
+BOOTPROTO=static
+IPADDR=172.24.4.225
+NETMASK=255.255.255.0
+GATEWAY=192.168.178.1
+ONBOOT=yes
+```
+
+Restart the network:
+
+```bash
+systemctl restart network
+```
+
+It should route like:
+
+```bash
+ip route
+default via 192.168.178.1 dev enp0s3
+169.254.0.0/16 dev enp0s3 scope link metric 1002
+169.254.0.0/16 dev br-ex scope link metric 1004
+172.24.4.0/24 dev br-ex proto kernel scope link src 172.24.4.225
+192.168.178.0/24 dev enp0s3 proto kernel scope link src 192.168.178.94
+```
+
+Route traffic to our enp0s3 interface:
+
+```bash
+iptables -t nat -A POSTROUTING -s 172.24.4.224/28 -o enp0s3 -m comment --comment "000 nat" -j MASQUERADE
+```
+
 Configure dhcp-agent by editing the /etc/neutron/dhcp_agent.ini file:
 
 ```bash
