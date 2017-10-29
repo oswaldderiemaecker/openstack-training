@@ -2034,6 +2034,22 @@ Restart all the services:
 
 **On the Controller Node:**
 
+Ensure all services are enabled:
+
+```bash
+systemctl enable openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
+systemctl enable neutron-server.service
+systemctl enable openstack-glance-api.service openstack-glance-registry.service
+systemctl enable httpd.service memcached.service
+systemctl enable rabbitmq-server.service
+systemctl enable openstack-cinder-api.service
+systemctl enable openstack-cinder-scheduler.service 
+systemctl enable openstack-cinder-volume.service 
+systemctl enable openstack-cinder-backup.service
+```
+
+Restart the services:
+
 ```bash
 systemctl restart openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
 systemctl restart neutron-server.service
@@ -2066,7 +2082,20 @@ systemctl status openstack-cinder-volume.service
 systemctl status openstack-cinder-backup.service
 ```
 
-On the Network Node:
+**On the Network Node:**
+
+Ensure the services are enabled:
+
+```bash
+systemctl enable openvswitch.service
+systemctl enable neutron-openvswitch-agent.service
+systemctl enable neutron-ovs-cleanup.service
+systemctl enable neutron-dhcp-agent.service
+systemctl enable neutron-l3-agent.service
+systemctl enable neutron-metadata-agent.service
+```
+
+Restart the services:
 
 ```bash
 systemctl restart openvswitch.service
@@ -2089,6 +2118,18 @@ systemctl status neutron-metadata-agent.service
 ```
 
 **On the Compute Node:**
+
+Ensure the services are enabled:
+
+```bash
+systemctl enable openvswitch.service
+systemctl enable neutron-openvswitch-agent.service
+systemctl enable neutron-ovs-cleanup.service
+systemctl enable openstack-nova-compute.service
+systemctl enable libvirtd.service openstack-nova-compute.service
+```
+
+Restart the services:
 
 ```bash
 systemctl restart openvswitch.service
