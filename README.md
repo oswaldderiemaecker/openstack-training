@@ -1680,9 +1680,9 @@ Create the base networks:
 
 ```bash
 openstack network create --external public
-openstack subnet create --network public --subnet-range 172.24.4.224/28 public_subnet
+openstack subnet create --network public --subnet-range 172.24.4.224/28 --dns-nameserver 8.8.8.8 public_subnet
 openstack network create private
-openstack subnet create --network private --subnet-range 10.0.0.0/24 private_subnet
+openstack subnet create --network private --subnet-range 10.0.0.0/24 --dns-nameserver 8.8.8.8 private_subnet
 openstack router create private-router
 openstack router add subnet private-router private_subnet
 neutron router-gateway-set private-router public
