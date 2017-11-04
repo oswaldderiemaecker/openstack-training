@@ -805,6 +805,7 @@ Edit the /etc/nova/nova.conf file and complete the following actions:
 
 ```bash
 [DEFAULT]
+my_ip = 172.31.27.1
 rootwrap_config=/etc/nova/rootwrap.conf
 compute_driver=libvirt.LibvirtDriver
 allow_resize_to_same_host=True
@@ -818,6 +819,7 @@ heal_instance_info_cache_interval=60
 force_snat_range=0.0.0.0/0
 metadata_host=controller.example.com
 dhcp_domain=novalocal
+use_neutron = True
 firewall_driver=nova.virt.firewall.NoopFirewallDriver
 state_path=/var/lib/nova
 report_interval=10
@@ -831,7 +833,7 @@ metadata_listen_port=8775
 metadata_workers=2
 debug=False
 log_dir=/var/log/nova
-transport_url=rabbit://openstack:rootroot@controller.example.com:5672/
+transport_url=rabbit://guest:guest@controller.example.com:5672/
 image_service=nova.image.glance.GlanceImageService
 osapi_volume_listen=0.0.0.0
 volume_api_class=nova.volume.cinder.API
@@ -882,6 +884,23 @@ live_migration_uri=qemu+ssh://nova_migration@%s/system?keyfile=/etc/nova/migrati
 cpu_mode=none
 vif_driver=nova.virt.libvirt.vif.LibvirtGenericVIFDriver
 
+[neutron]
+url=http://controller.example.com:9696
+region_name=RegionOne
+ovs_bridge=br-int
+default_floating_pool=nova
+extension_sync_interval=600
+service_metadata_proxy=True
+metadata_proxy_shared_secret=a44139447afa46ae
+timeout=60
+auth_type=v3password
+auth_url=http://controller.example.com:35357/v3
+project_name=services
+project_domain_name=Default
+username=neutron
+user_domain_name=Default
+password=rootroot
+
 [notifications]
 notify_api_faults=False
 
@@ -897,7 +916,7 @@ policy_file=/etc/nova/policy.json
 [placement]
 os_region_name=RegionOne
 auth_type=password
-auth_url=http://controller.example.com:5000/v3
+auth_url=http://controller.example.com:35357/v3
 project_name=services
 project_domain_name=Default
 username=placement
@@ -913,8 +932,8 @@ max_attempts=3
 enabled=True
 keymap=en-us
 vncserver_listen=0.0.0.0
-vncserver_proxyclient_address=34.238.85.43
-novncproxy_base_url=http://34.238.85.43:6080/vnc_auto.html
+vncserver_proxyclient_address=$my_ip
+novncproxy_base_url=http://$my_ip:6080/vnc_auto.html
 novncproxy_host=0.0.0.0
 novncproxy_port=6080
 
