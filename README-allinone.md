@@ -1542,40 +1542,6 @@ ip addr list
        valid_lft forever preferred_lft forever
 ```
 
-## 2.4.1 Do the network Configuration:
-
-Create Public Floating Network (All Tenants)
-
-This is the virtual network that OpenStack will bridge to the outside world. You will assign public IPs to your instances from this network.
-
-```bash
-. keystonerc_admin
-neutron net-create public --router:external=True --provider:network_type=vxlan --provider:segmentation_id=96
-neutron subnet-create --name public_subnet --disable-dhcp --allocation-pool start=192.168.178.100,end=192.168.178.150 public 192.168.178.0/24
-```
-
-Ensure to update the IPs for the allocation-pool and netmask with your local IPs.
-
-Setup Tenant Network/Subnet
-
-This is the private network your instances will attach to. Instances will be issued IPs from this private IP subnet.
-
-```bash
-. keystonerc_demo
-neutron net-create private
-neutron subnet-create --name private_subnet --dns-nameserver 8.8.8.8 --dns-nameserver 8.8.4.4 --allocation-pool start=10.0.30.10,end=10.0.30.254 private 10.0.30.0/24
-```
-
-Create an External Router to Attach to floating IP Network
-
-This router will attach to your private subnet and route to the public network, which is where your floating IPs are located.
-
-```bash
-neutron router-create extrouter
-neutron router-gateway-set extrouter public
-neutron router-interface-add extrouter private_subnet
-```
-
 Ensure all services and agents are running fine:
 
 ```bash
@@ -1616,7 +1582,7 @@ Install the packages:
 yum install openstack-dashboard -y
 ```
 
-Edit the /etc/openstack-dashboard/local_settings file and complete the following actions:
+Edit the /etc/openstack-dashboard/local_settings file and replace with the following actions:
 
 ```bash
 import os
@@ -2018,7 +1984,7 @@ Ensure to set your Public IP address:
 Restart Apache:
 
 ```bash
-systemctl restart httpd.service memcached.service
+systemctl restart httpd.service
 ```
 
 Set permission on Horizon log:
@@ -2027,7 +1993,7 @@ Set permission on Horizon log:
 chown -R apache:apache /var/log/horizon
 ```
 
-Finalize the configuration of OpenStack:
+## 2.8 Finalize the configuration of OpenStack
 
 Create Flavors:
 
@@ -2035,6 +2001,39 @@ Create Flavors:
 openstack flavor create --id 0 --ram 512   --vcpus 1 --disk 1  m1.tiny
 openstack flavor create --id 1 --ram 1024  --vcpus 1 --disk 1  m1.small
 openstack flavor create --id 2 --ram 2048  --vcpus 1 --disk 1  m1.large
+```
+## 2.8.1 Do the network Configuration:
+
+Create Public Floating Network (All Tenants)
+
+This is the virtual network that OpenStack will bridge to the outside world. You will assign public IPs to your instances from this network.
+
+```bash
+. keystonerc_admin
+neutron net-create public --router:external=True --provider:network_type=vxlan --provider:segmentation_id=96
+neutron subnet-create --name public_subnet --disable-dhcp --allocation-pool start=192.168.178.100,end=192.168.178.150 public 192.168.178.0/24
+```
+
+Ensure to update the IPs for the allocation-pool and netmask with your local IPs.
+
+Setup Tenant Network/Subnet
+
+This is the private network your instances will attach to. Instances will be issued IPs from this private IP subnet.
+
+```bash
+. keystonerc_demo
+neutron net-create private
+neutron subnet-create --name private_subnet --dns-nameserver 8.8.8.8 --dns-nameserver 8.8.4.4 --allocation-pool start=10.0.30.10,end=10.0.30.254 private 10.0.30.0/24
+```
+
+Create an External Router to Attach to floating IP Network
+
+This router will attach to your private subnet and route to the public network, which is where your floating IPs are located.
+
+```bash
+neutron router-create extrouter
+neutron router-gateway-set extrouter public
+neutron router-interface-add extrouter private_subnet
 ```
 
 Restart all the services:
@@ -2109,7 +2108,6 @@ systemctl restart neutron-ovs-cleanup.service
 systemctl restart neutron-dhcp-agent.service
 systemctl restart neutron-l3-agent.service
 systemctl restart neutron-metadata-agent.service
-systemctl restart neutron-metering-agent
 ```
 
 Verify all is running fine:
@@ -2123,14 +2121,11 @@ systemctl status neutron-l3-agent.service
 systemctl status neutron-metadata-agent.service
 ```
 
-**Nova:**
+**Nova Compute:**
 
 Ensure the services are enabled:
 
 ```bash
-systemctl enable openvswitch.service
-systemctl enable neutron-openvswitch-agent.service
-systemctl enable neutron-ovs-cleanup.service
 systemctl enable openstack-nova-compute.service
 systemctl enable libvirtd.service openstack-nova-compute.service
 ```
@@ -2138,9 +2133,6 @@ systemctl enable libvirtd.service openstack-nova-compute.service
 Restart the services:
 
 ```bash
-systemctl restart openvswitch.service
-systemctl restart neutron-openvswitch-agent.service
-systemctl restart neutron-ovs-cleanup.service
 systemctl restart openstack-nova-compute.service
 systemctl restart libvirtd.service openstack-nova-compute.service
 ```
@@ -2148,9 +2140,6 @@ systemctl restart libvirtd.service openstack-nova-compute.service
 Verify all is running fine:
 
 ```bash
-systemctl status openvswitch.service
-systemctl status neutron-openvswitch-agent.service
-systemctl status neutron-ovs-cleanup.service
 systemctl status openstack-nova-compute.service
 systemctl status libvirtd.service openstack-nova-compute.service
 ```
@@ -2183,6 +2172,13 @@ openstack network agent list
 | 7d2e2b57-eda7-470e- | Metadata agent     | network | None              | True  | UP    | neutron-metadata-     |
 | a6e4-020a55600d3a   |                    |         |                   |       |       | agent                 |
 +---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
+
+openstack hypervisor list
++----+-----------------------------+-----------------+--------------+-------+
+| ID | Hypervisor Hostname         | Hypervisor Type | Host IP      | State |
++----+-----------------------------+-----------------+--------------+-------+
+|  2 | ip-172-31-27-1.ec2.internal | QEMU            | 172.31.27.1  | up    |
++----+-----------------------------+-----------------+--------------+-------+
 
 openstack network list --external
 +--------------------------------------+--------+--------------------------------------+
