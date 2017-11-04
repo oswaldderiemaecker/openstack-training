@@ -1079,8 +1079,6 @@ openstack endpoint create --region RegionOne network admin http://controller.exa
 
 ## 2.3.2 Configure Neutron the Networking Self-service networks
 
-**On the Controller Node**
-
 Install the components:
 
 ```bash
@@ -1089,7 +1087,7 @@ yum install openstack-neutron openstack-neutron-ml2 openstack-neutron-common -y
 
 Configure the server component
 
-Edit the /etc/neutron/neutron.conf file and complete the following actions:
+Edit the /etc/neutron/neutron.conf file and replace with the following actions:
 
 ```bash
 [DEFAULT]
@@ -1107,7 +1105,7 @@ l3_ha=False
 max_l3_agents_per_router=3
 debug=False
 log_dir=/var/log/neutron
-transport_url=rabbit://openstack:rootroot@controller.example.com:5672/
+transport_url=rabbit://guest:guest@controller.example.com:5672/
 control_exchange=neutron
 
 [agent]
@@ -1177,7 +1175,7 @@ enable_security_group=True
 
 Configure the Compute service to use the Networking service:
 
-Edit the /etc/nova/nova.conf file and perform the following actions:
+Edit the /etc/nova/nova.conf file and add our neutron service information:
 
 ```bash
 [neutron]
@@ -1288,6 +1286,9 @@ local_ip=172.31.52.18
 Restart all services:
 
 ```bash
+systemctl enable openvswitch.service
+systemctl enable neutron-openvswitch-agent.service
+systemctl enable neutron-ovs-cleanup.service
 systemctl restart openvswitch.service
 systemctl restart neutron-openvswitch-agent.service
 systemctl restart neutron-ovs-cleanup.service
@@ -1322,7 +1323,7 @@ c7b7a559-9c84-42a0-b742-02f894b7a039
     ovs_version: "2.7.2"
 ```
 
-Configure l3-agent by editing the /etc/neutron/l3_agent.ini file:
+Configure l3-agent by replacing the /etc/neutron/l3_agent.ini file with:
 
 ```bash
 [DEFAULT]
@@ -1338,7 +1339,7 @@ systemctl restart openvswitch.service
 ovs-vsctl --may-exist add-br br-ex
 ```
 
-Configure dhcp-agent by editing the /etc/neutron/dhcp_agent.ini file:
+Configure dhcp-agent by replacing the /etc/neutron/dhcp_agent.ini file with:
 
 ```bash
 [DEFAULT]
@@ -1473,7 +1474,6 @@ Configure the br-ex interface:
 
 ```bash
 cd /etc/sysconfig/network-scripts/
-cp ifcfg-eth0 ifcfg-br-ex
 ```
 
 ```bash
@@ -1551,8 +1551,10 @@ This is the virtual network that OpenStack will bridge to the outside world. You
 ```bash
 . keystonerc_admin
 neutron net-create public --router:external=True --provider:network_type=vxlan --provider:segmentation_id=96
-neutron subnet-create --name public_subnet --disable-dhcp --allocation-pool start=172.31.52.100,end=172.31.52.150 public 172.31.52.0/24
+neutron subnet-create --name public_subnet --disable-dhcp --allocation-pool start=192.168.178.100,end=192.168.178.150 public 192.168.178.0/24
 ```
+
+Ensure to update the IPs for the allocation-pool and netmask with your local IPs.
 
 Setup Tenant Network/Subnet
 
@@ -1574,15 +1576,10 @@ neutron router-gateway-set extrouter public
 neutron router-interface-add extrouter private_subnet
 ```
 
-Check the Nova Status:
-
-```bash
-nova-status upgrade check
-```
-
 Ensure all services and agents are running fine:
 
 ```bash
+. keystonerc_admin
 openstack compute service list
 +----+------------------+------------+----------+---------+-------+----------------------------+
 | ID | Binary           | Host       | Zone     | Status  | State | Updated At                 |
