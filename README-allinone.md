@@ -241,16 +241,23 @@ keystone-manage bootstrap --bootstrap-password rootroot --bootstrap-admin-url ht
 
 Configure the Apache HTTP server:
 
-Edit the /etc/httpd/conf/httpd.conf file and configure the ServerName option to reference the controller node:
+Edit the /etc/httpd/conf/httpd.conf file and configure the ServerName option to reference the controller node IP:
 
 ```
-ServerName controller.example.com
+ServerName 172.31.52.18
 ```
 
 Create a link to the /usr/share/keystone/wsgi-keystone.conf file:
 
 ```bash
 ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/
+```
+
+Disable SELinux again using below command:
+
+```bash
+setenforce 0 ; sed -i 's/=enforcing/=disabled/g' /etc/sysconfig/selinux
+getenforce
 ```
 
 Start the Apache HTTP service and configure it to start when the system boots:
@@ -324,7 +331,7 @@ openstack role add --project demo --user demo user
 
 For security reasons, disable the temporary authentication token mechanism:
 
-Edit the /etc/keystone/keystone-paste.ini file and remove admin_token_auth from the [pipeline:public_api], [pipeline:admin_api], and [pipeline:api_v3] sections.
+Edit the /etc/keystone/keystone-paste.ini file and remove admin_token_auth from the [pipeline:public_api], [pipeline:admin_api], and [pipeline:api_v3] sections if it exist.
 
 Unset the temporary OS_AUTH_URL and OS_PASSWORD environment variable:
 
