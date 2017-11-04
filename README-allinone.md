@@ -979,6 +979,12 @@ openstack compute service list
 +----+------------------+------------+----------+---------+-------+----------------------------+
 ```
 
+Check the Nova Status:
+
+```bash
+nova-status upgrade check
+```
+
 ## 2.3.1 Networking (neutron) service install and setup
 
 **On controller node**
@@ -2189,6 +2195,12 @@ openstack volume service list
 | cinder-scheduler | controller     | nova | enabled | up    | 2017-10-28T13:12:53.000000 |
 | cinder-volume    | controller@lvm | nova | enabled | up    | 2017-10-28T13:12:49.000000 |
 +------------------+----------------+------+---------+-------+----------------------------+
+```
+
+Nova Status:
+
+```bash
+nova-status upgrade check
 ```
 
 OpenStack Ports:
