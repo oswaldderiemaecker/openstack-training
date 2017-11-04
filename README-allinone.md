@@ -558,7 +558,7 @@ Install the packages:
 yum install openstack-cinder targetcli -y
 ```
 
-Edit the /etc/cinder/cinder.conf file and complete the following actions:
+Edit the /etc/cinder/cinder.conf file and replace with the following actions:
 
 ```bash
 [DEFAULT]
@@ -700,9 +700,7 @@ systemctl status openstack-cinder-volume.service
 systemctl status openstack-cinder-backup.service
 ```
 
-## 2.2.2 Compute (nova) service install and configure on Controller node
-
-**On Controller node**
+## 2.2.2 Compute (nova) service install and configure
 
 Before you install and configure the Compute service, you must create databases, service credentials, 
 and API endpoints.
@@ -795,11 +793,11 @@ Install the packages:
 yum install openstack-nova-api openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler openstack-nova-compute openstack-nova-placement-api openstack-nova-migration -y
 ```
 
-Edit the /etc/nova/nova.conf file and complete the following actions:
+Edit the /etc/nova/nova.conf file and replace with the following actions:
 
 ```bash
 [DEFAULT]
-my_ip = 172.31.27.1
+my_ip = 192.168.178.93
 rootwrap_config=/etc/nova/rootwrap.conf
 compute_driver=libvirt.LibvirtDriver
 allow_resize_to_same_host=True
@@ -878,23 +876,6 @@ live_migration_uri=qemu+ssh://nova_migration@%s/system?keyfile=/etc/nova/migrati
 cpu_mode=none
 vif_driver=nova.virt.libvirt.vif.LibvirtGenericVIFDriver
 
-[neutron]
-url=http://controller.example.com:9696
-region_name=RegionOne
-ovs_bridge=br-int
-default_floating_pool=nova
-extension_sync_interval=600
-service_metadata_proxy=True
-metadata_proxy_shared_secret=a44139447afa46ae
-timeout=60
-auth_type=v3password
-auth_url=http://controller.example.com:35357/v3
-project_name=services
-project_domain_name=Default
-username=neutron
-user_domain_name=Default
-password=rootroot
-
 [notifications]
 notify_api_faults=False
 
@@ -936,6 +917,14 @@ api_paste_config=api-paste.ini
 
 [placement_database]
 connection=mysql+pymysql://nova_placement:rootroot@controller.example.com/nova_placement
+```
+
+Ensure you changed the my_ip variable with your local IP:
+
+```bash
+[DEFAULT]
+my_ip = 172.31.27.1
+...
 ```
 
 Populate the Compute databases:
@@ -990,6 +979,12 @@ chown nova:nova /usr/bin/nova-placement-api
 chown nova:nova /var/log/nova/nova-placement-api.log
 ```
 
+Restart apache:
+
+```bash
+systemctl restart httpd.service
+```
+
 Verify nova cell0 and cell1 are registered correctly:
 
 ```bash
@@ -1035,15 +1030,7 @@ openstack compute service list
 +----+------------------+------------+----------+---------+-------+----------------------------+
 ```
 
-Check the Nova Status:
-
-```bash
-nova-status upgrade check
-```
-
 ## 2.3.1 Networking (neutron) service install and setup
-
-**On controller node**
 
 Use the database access client to connect to the database server as the root user:
 
@@ -1585,6 +1572,12 @@ This router will attach to your private subnet and route to the public network, 
 neutron router-create extrouter
 neutron router-gateway-set extrouter public
 neutron router-interface-add extrouter private_subnet
+```
+
+Check the Nova Status:
+
+```bash
+nova-status upgrade check
 ```
 
 Ensure all services and agents are running fine:
