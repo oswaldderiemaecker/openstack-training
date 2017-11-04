@@ -1496,6 +1496,29 @@ neutron router-gateway-set extrouter public
 neutron router-interface-add extrouter private_subnet
 ```
 
+Ensure all services and agents are running fine:
+
+```bash
+openstack compute service list
++----+------------------+------------+----------+---------+-------+----------------------------+
+| ID | Binary           | Host       | Zone     | Status  | State | Updated At                 |
++----+------------------+------------+----------+---------+-------+----------------------------+
+|  1 | nova-conductor   | controller | internal | enabled | up    | 2017-11-04T11:09:50.000000 |
+|  2 | nova-consoleauth | controller | internal | enabled | up    | 2017-11-04T11:09:40.000000 |
+|  3 | nova-scheduler   | controller | internal | enabled | up    | 2017-11-04T11:09:41.000000 |
+|  6 | nova-compute     | controller | nova     | enabled | up    | 2017-11-04T11:09:46.000000 |
++----+------------------+------------+----------+---------+-------+----------------------------+
+
+openstack network agent list
++--------------------------------------+--------------------+------------+-------------------+-------+-------+---------------------------+
+| ID                                   | Agent Type         | Host       | Availability Zone | Alive | State | Binary                    |
++--------------------------------------+--------------------+------------+-------------------+-------+-------+---------------------------+
+| 09ce770b-8509-428d-88c5-5e24a7d2bbb0 | Metadata agent     | controller | None              | :-)   | UP    | neutron-metadata-agent    |
+| 48ac34bc-aa8d-49e3-b2f5-ab6dc8d95f16 | L3 agent           | controller | nova              | :-)   | UP    | neutron-l3-agent          |
+| ec7c1424-41e1-4713-9881-42be0ab779de | DHCP agent         | controller | nova              | :-)   | UP    | neutron-dhcp-agent        |
+| f0bdd034-5546-48d1-a422-ea1682f74f6b | Open vSwitch agent | controller | None              | :-)   | UP    | neutron-openvswitch-agent |
++--------------------------------------+--------------------+------------+-------------------+-------+-------+---------------------------+
+
 ## 2.7 Dashboard install and configure
 
 Install the packages:
@@ -1863,8 +1886,6 @@ openstack flavor create --id 2 --ram 2048  --vcpus 1 --disk 10  m1.large
 
 Restart all the services:
 
-**On the Controller Node:**
-
 Ensure all services are enabled:
 
 ```bash
@@ -1913,7 +1934,7 @@ systemctl status openstack-cinder-volume.service
 systemctl status openstack-cinder-backup.service
 ```
 
-**On the Network Node:**
+**Neutron:**
 
 Ensure the services are enabled:
 
@@ -1948,7 +1969,7 @@ systemctl status neutron-l3-agent.service
 systemctl status neutron-metadata-agent.service
 ```
 
-**On the Compute Node:**
+**Nova:**
 
 Ensure the services are enabled:
 
@@ -2015,13 +2036,6 @@ openstack network list --external
 +--------------------------------------+--------+--------------------------------------+
 | 13eaf423-1901-4176-a184-e69a48f87586 | public | 89203467-67c0-42e4-ba55-f64387ea5ad4 |
 +--------------------------------------+--------+--------------------------------------+
-
-openstack hypervisor list
-+----+---------------------+
-| ID | Hypervisor Hostname |
-+----+---------------------+
-|  1 | compute.example.com |
-+----+---------------------+
 ```
 
 Networking:
