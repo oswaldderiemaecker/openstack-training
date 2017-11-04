@@ -684,7 +684,7 @@ systemctl enable openstack-cinder-api.service
 systemctl enable openstack-cinder-scheduler.service 
 systemctl enable openstack-cinder-volume.service 
 systemctl enable openstack-cinder-backup.service
-systemctl start openstack-losetup.service
+systemctl restart openstack-losetup.service
 systemctl restart openstack-cinder-api.service
 systemctl restart openstack-cinder-scheduler.service 
 systemctl restart openstack-cinder-volume.service 
@@ -2046,6 +2046,7 @@ systemctl enable neutron-server.service
 systemctl enable openstack-glance-api.service openstack-glance-registry.service
 systemctl enable httpd.service memcached.service
 systemctl enable rabbitmq-server.service
+systemctl enable openstack-losetup.service
 systemctl enable openstack-cinder-api.service
 systemctl enable openstack-cinder-scheduler.service 
 systemctl enable openstack-cinder-volume.service 
@@ -2060,6 +2061,7 @@ systemctl restart neutron-server.service
 systemctl restart openstack-glance-api.service openstack-glance-registry.service
 systemctl restart httpd.service memcached.service
 systemctl restart rabbitmq-server.service
+systemctl restart openstack-losetup.service
 systemctl restart openstack-cinder-api.service
 systemctl restart openstack-cinder-scheduler.service 
 systemctl restart openstack-cinder-volume.service 
@@ -2080,6 +2082,7 @@ systemctl status openstack-glance-api.service
 systemctl status openstack-glance-registry.service
 systemctl status httpd.service memcached.service
 systemctl status rabbitmq-server.service
+systemctl status openstack-losetup.service
 systemctl status openstack-cinder-api.service
 systemctl status openstack-cinder-scheduler.service 
 systemctl status openstack-cinder-volume.service 
@@ -2179,18 +2182,18 @@ openstack hypervisor list
 +----+-----------------------------+-----------------+--------------+-------+
 |  2 | ip-172-31-27-1.ec2.internal | QEMU            | 172.31.27.1  | up    |
 +----+-----------------------------+-----------------+--------------+-------+
+```
 
+Networking:
+
+```bash
 openstack network list --external
 +--------------------------------------+--------+--------------------------------------+
 | ID                                   | Name   | Subnets                              |
 +--------------------------------------+--------+--------------------------------------+
 | 13eaf423-1901-4176-a184-e69a48f87586 | public | 89203467-67c0-42e4-ba55-f64387ea5ad4 |
 +--------------------------------------+--------+--------------------------------------+
-```
 
-Networking:
-
-```bash
 openstack network list
 +--------------------------------------+---------+--------------------------------------+
 | ID                                   | Name    | Subnets                              |
@@ -2200,37 +2203,34 @@ openstack network list
 +--------------------------------------+---------+--------------------------------------+
 
 openstack router list
-+------------------------+----------------+--------+-------+-------------+-------+--------------------------+
-| ID                     | Name           | Status | State | Distributed | HA    | Project                  |
-+------------------------+----------------+--------+-------+-------------+-------+--------------------------+
-| 715ad24d-31b8-4f4d-    | private-router | ACTIVE | UP    | False       | False | eb13e7091aab41b2942717a9 |
-| 95eb-3bff5ba6e4df      |                |        |       |             |       | 9313ff37                 |
-+------------------------+----------------+--------+-------+-------------+-------+--------------------------+
++--------------------------------------+-----------+--------+-------+-------------+-------+----------------------------------+
+| ID                                   | Name      | Status | State | Distributed | HA    | Project                          |
++--------------------------------------+-----------+--------+-------+-------------+-------+----------------------------------+
+| 1c531ca9-3fbc-4e6a-94c0-1d61ccda3cd6 | extrouter | ACTIVE | UP    | False       | False | 133d12787b254e4e8422c1db84700c65 |
++--------------------------------------+-----------+--------+-------+-------------+-------+----------------------------------+
 
-openstack router show private-router
-+-------------------------+-----------------------------------------------------------------------------------------+
-| Field                   | Value                                                                                   |
-+-------------------------+-----------------------------------------------------------------------------------------+
-| admin_state_up          | UP                                                                                      |
-| availability_zone_hints |                                                                                         |
-| availability_zones      | nova                                                                                    |
-| created_at              | 2017-10-26T16:47:47Z                                                                    |
-| description             |                                                                                         |
-| distributed             | False                                                                                   |
-| external_gateway_info   | {"network_id": "13eaf423-1901-4176-a184-e69a48f87586", "enable_snat": true,             |
-|                         | "external_fixed_ips": [{"subnet_id": "89203467-67c0-42e4-ba55-f64387ea5ad4",            |
-|                         | "ip_address": "172.24.4.232"}]}                                                         |
-| flavor_id               | None                                                                                    |
-| ha                      | False                                                                                   |
-| id                      | 715ad24d-31b8-4f4d-95eb-3bff5ba6e4df                                                    |
-| name                    | private-router                                                                          |
-| project_id              | eb13e7091aab41b2942717a99313ff37                                                        |
-| project_id              | eb13e7091aab41b2942717a99313ff37                                                        |
-| revision_number         | 11                                                                                      |
-| routes                  |                                                                                         |
-| status                  | ACTIVE                                                                                  |
-| updated_at              | 2017-10-26T18:22:40Z                                                                    |
-+-------------------------+-----------------------------------------------------------------------------------------+
+openstack router show extrouter
++-------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field                   | Value                                                                                                                                                                                     |
++-------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| admin_state_up          | UP                                                                                                                                                                                        |
+| availability_zone_hints |                                                                                                                                                                                           |
+| availability_zones      | nova                                                                                                                                                                                      |
+| created_at              | 2017-11-04T22:31:07Z                                                                                                                                                                      |
+| description             |                                                                                                                                                                                           |
+| distributed             | False                                                                                                                                                                                     |
+| external_gateway_info   | {"network_id": "849eb0f2-4a9f-4127-b7d9-0a01e6759e35", "enable_snat": true, "external_fixed_ips": [{"subnet_id": "7a7b25e5-1a02-42d9-ab73-a454a5abc9fa", "ip_address": "172.31.18.104"}]} |
+| flavor_id               | None                                                                                                                                                                                      |
+| ha                      | False                                                                                                                                                                                     |
+| id                      | 1c531ca9-3fbc-4e6a-94c0-1d61ccda3cd6                                                                                                                                                      |
+| name                    | extrouter                                                                                                                                                                                 |
+| project_id              | 133d12787b254e4e8422c1db84700c65                                                                                                                                                          |
+| revision_number         | 3                                                                                                                                                                                         |
+| routes                  |                                                                                                                                                                                           |
+| status                  | ACTIVE                                                                                                                                                                                    |
+| tags                    |                                                                                                                                                                                           |
+| updated_at              | 2017-11-04T22:31:14Z                                                                                                                                                                      |
++-------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
 Block Storage:
@@ -2277,10 +2277,4 @@ yum install ntpdate
 ntpdate -u 0.europe.pool.ntp.org
 ```
 
-# TODO
-
-* Cinder
-* Floating IPs
-* ip netns exec <- done
-* Swift
 
