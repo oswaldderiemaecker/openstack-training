@@ -613,7 +613,7 @@ volumes_dir=/var/lib/cinder/volumes
 volume_backend_name=lvm
 ```
 
-Change the iscsi_ip_address to your controller IP:
+**Change the iscsi_ip_address to your controller IP:**
 
 ```bash
 [lvm]
@@ -924,7 +924,7 @@ api_paste_config=api-paste.ini
 connection=mysql+pymysql://nova_placement:rootroot@controller.example.com/nova_placement
 ```
 
-Ensure you changed the my_ip variable with your local IP:
+**Ensure you changed the my_ip variable with your local IP:**
 
 ```bash
 [DEFAULT]
@@ -1279,7 +1279,7 @@ bridge_mappings=extnet:br-ex
 firewall_driver=neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 ```
 
-Ensure to set the local_ip to your Node IP:
+**Ensure to set the local_ip to your Node IP:**
 
 ```
 [ovs]
@@ -1364,6 +1364,14 @@ Configure the metadata-agent by editing the /etc/neutron/metadata_agent.ini file
 metadata_proxy_shared_secret=a44139447afa46ae
 metadata_workers=2
 debug=False
+nova_metadata_ip=172.31.52.18
+```
+
+**Ensure you update the nova_metadata_ip with your local IPs:**
+
+```bash
+[DEFAULT]
+...
 nova_metadata_ip=172.31.52.18
 ```
 
