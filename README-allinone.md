@@ -798,7 +798,7 @@ openstack endpoint create --region RegionOne placement admin http://controller.e
 Install the packages:
 
 ```bash
-yum install openstack-nova-api openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler openstack-nova-compute openstack-nova-placement-api -y
+yum install openstack-nova-api openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler openstack-nova-compute openstack-nova-placement-api openstack-nova-migration -y
 ```
 
 Edit the /etc/nova/nova.conf file and complete the following actions:
