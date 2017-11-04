@@ -940,6 +940,12 @@ Verify nova cell0 and cell1 are registered correctly:
 nova-manage cell_v2 list_cells
 ```
 
+Discover Compute Host:
+
+```bash
+su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
+```
+
 Start the Compute services and configure them to start when the system boots:
 
 ```bash
@@ -2044,6 +2050,7 @@ systemctl restart neutron-ovs-cleanup.service
 systemctl restart neutron-dhcp-agent.service
 systemctl restart neutron-l3-agent.service
 systemctl restart neutron-metadata-agent.service
+systemctl restart neutron-metering-agent
 ```
 
 Verify all is running fine:
