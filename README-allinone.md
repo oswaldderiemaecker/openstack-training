@@ -831,7 +831,7 @@ metadata_listen_port=8775
 metadata_workers=2
 debug=False
 log_dir=/var/log/nova
-transport_url=rabbit://guest:guest@controller.example.com:5672/
+transport_url=rabbit://openstack:rootroot@controller.example.com:5672/
 image_service=nova.image.glance.GlanceImageService
 osapi_volume_listen=0.0.0.0
 volume_api_class=nova.volume.cinder.API
@@ -1052,7 +1052,7 @@ l3_ha=False
 max_l3_agents_per_router=3
 debug=False
 log_dir=/var/log/neutron
-transport_url=rabbit://guest:guest@controller.example.com:5672/
+transport_url=rabbit://openstack:rootroot@controller.example.com:5672/
 control_exchange=neutron
 
 [agent]
