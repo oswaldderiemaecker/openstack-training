@@ -1392,6 +1392,48 @@ openstack network agent list
 +--------------------------------------+--------------------+------------+-------------------+-------+-------+---------------------------+
 ```
 
+Configure the br-ex interface:
+
+```bash
+cd /etc/sysconfig/network-scripts/
+cp ifcfg-eth0 ifcfg-br-ex
+```
+
+```bash
+vi ifcfg-br-ex
+
+ONBOOT=yes
+USERCTL=no
+DEVICE=br-ex
+NAME=br-ex
+DEVICETYPE=ovs
+IPADDR=172.31.54.21
+NETMASK=255.255.255.0
+GATEWAY=172.31.54.1
+TYPE=OVSBridge
+OVSDHCPINTERFACES=eth0
+OVS_EXTRA="set bridge br-ex other-config:hwaddr=12:48:64:6e:a6:c6 fail_mode=standalone"
+```
+
+Ensure you replaced the IP address with eth0 IP.
+
+```bash
+IPADDR=172.31.54.21
+NETMASK=255.255.255.0
+GATEWAY=172.31.54.1
+```
+
+As well as the Mac address:
+
+```bash
+OVS_EXTRA="set bridge br-ex other-config:hwaddr=12:2e:14:32:c6:3e fail_mode=standalone"
+```
+
+Restart the network:
+
+```bash
+systemctl restart network
+```
 
 ## 2.4.1 Do the network Configuration:
 
