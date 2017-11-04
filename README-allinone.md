@@ -883,23 +883,6 @@ live_migration_uri=qemu+ssh://nova_migration@%s/system?keyfile=/etc/nova/migrati
 cpu_mode=none
 vif_driver=nova.virt.libvirt.vif.LibvirtGenericVIFDriver
 
-[neutron]
-url=http://controller.example.com:9696
-region_name=RegionOne
-ovs_bridge=br-int
-default_floating_pool=nova
-extension_sync_interval=600
-service_metadata_proxy=True
-metadata_proxy_shared_secret=a44139447afa46ae
-timeout=60
-auth_type=v3password
-auth_url=http://controller.example.com:35357/v3
-project_name=services
-project_domain_name=Default
-username=neutron
-user_domain_name=Default
-password=rootroot
-
 [notifications]
 notify_api_faults=False
 
@@ -1060,16 +1043,15 @@ service_plugins=router,metering
 allow_overlapping_ips=True
 notify_nova_on_port_status_changes=True
 notify_nova_on_port_data_changes=True
-api_workers=1
-rpc_workers=1
+api_workers=2
+rpc_workers=2
 router_scheduler_driver=neutron.scheduler.l3_agent_scheduler.ChanceScheduler
 l3_ha=False
 max_l3_agents_per_router=3
 debug=False
 log_dir=/var/log/neutron
-rpc_backend=rabbit
+transport_url=rabbit://guest:guest@controller.example.com:5672/
 control_exchange=neutron
-nova_url=http://controller.example.com:8774/v2
 
 [agent]
 root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
@@ -1078,14 +1060,14 @@ root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
 connection=mysql+pymysql://neutron:rootroot@controller.example.com/neutron
 
 [keystone_authtoken]
-auth_uri=http://controller.example.com:5000/v2.0
+auth_uri=http://controller.example.com:5000/
 auth_type=password
-project_name=services
-password=rootroot
-username=neutron
-project_domain_name=Default
-user_domain_name=Default
 auth_url=http://controller.example.com:35357
+username=neutron
+password=rootroot
+user_domain_name=Default
+project_name=services
+project_domain_name=Default
 
 [nova]
 region_name=RegionOne
@@ -1093,23 +1075,18 @@ auth_url=http://controller.example.com:35357
 auth_type=password
 password=rootroot
 project_domain_id=default
+project_domain_name=Default
 project_name=services
 tenant_name=services
 user_domain_id=default
+user_domain_name=Default
 username=nova
 
 [oslo_concurrency]
 lock_path=$state_path/lock
 
 [oslo_messaging_rabbit]
-kombu_ssl_keyfile=
-kombu_ssl_certfile=
-kombu_ssl_ca_certs=
-rabbit_host=controller.example.com
-rabbit_port=5672
-rabbit_use_ssl=False
-rabbit_userid=guest
-rabbit_password=guest
+ssl=False
 
 [oslo_policy]
 policy_file=/etc/neutron/policy.json
@@ -1123,23 +1100,25 @@ Edit the /etc/neutron/plugins/ml2/ml2_conf.ini file and complete the following a
 [DEFAULT]
 
 [ml2]
-type_drivers = vxlan
-tenant_network_types = vxlan
-mechanism_drivers =openvswitch
-path_mtu = 0
+type_drivers=vxlan,flat
+tenant_network_types=vxlan
+mechanism_drivers=openvswitch
+extension_drivers=port_security
+path_mtu=0
+
+[ml2_type_flat]
+flat_networks=*
 
 [ml2_type_vxlan]
-vni_ranges =10:100
-vxlan_group = 224.0.0.1
+vni_ranges=10:100
+vxlan_group=224.0.0.1
 
 [securitygroup]
-firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-enable_security_group = True
+firewall_driver=neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+enable_security_group=True
 ```
 
 Configure the Compute service to use the Networking service:
-
-**On the Controller Node**
 
 Edit the /etc/nova/nova.conf file and perform the following actions:
 
@@ -1148,9 +1127,10 @@ Edit the /etc/nova/nova.conf file and perform the following actions:
 url=http://controller.example.com:9696
 region_name=RegionOne
 ovs_bridge=br-int
+default_floating_pool=nova
 extension_sync_interval=600
 service_metadata_proxy=True
-metadata_proxy_shared_secret=rootroot
+metadata_proxy_shared_secret=a44139447afa46ae
 timeout=60
 auth_type=v3password
 auth_url=http://controller.example.com:35357/v3
@@ -1211,66 +1191,11 @@ systemctl status httpd.service memcached.service
 systemctl status rabbitmq-server.service
 ```
 
-## 2.3.2 Configure Neutron on the Compute Node
-
-**On Compute node**
-
-Install the components:
+Configure OpenVSwitch:
 
 ```bash
-yum install openstack-neutron -y
 yum install openvswitch -y
 yum install openstack-neutron-openvswitch -y
-```
-
-Edit the /etc/neutron/neutron.conf file and complete the following actions:
-
-```bash
-[DEFAULT]
-bind_host=0.0.0.0
-auth_strategy=keystone
-core_plugin=neutron.plugins.ml2.plugin.Ml2Plugin
-service_plugins=router,metering
-allow_overlapping_ips=True
-debug=False
-log_dir=/var/log/neutron
-rpc_backend=rabbit
-control_exchange=neutron
-
-[agent]
-root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
-
-[oslo_concurrency]
-lock_path=$state_path/lock
-
-[oslo_messaging_rabbit]
-kombu_ssl_keyfile=
-kombu_ssl_certfile=
-kombu_ssl_ca_certs=
-rabbit_host=controller.example.com
-rabbit_port=5672
-rabbit_use_ssl=False
-rabbit_userid=guest
-rabbit_password=guest
-```
-
-
-Add the Neutron configuration into the /etc/nova/nova.conf file on the Compute Node:
-
-```bash
-[neutron]
-url=http://controller.example.com:9696
-region_name=RegionOne
-ovs_bridge=br-int
-extension_sync_interval=600
-timeout=60
-auth_type=v3password
-auth_url=http://controller.example.com:35357/v3
-project_name=services
-project_domain_name=Default
-username=neutron
-user_domain_name=Default
-password=rootroot
 ```
 
 Configure the OpenVSwitch agent in /etc/neutron/plugins/ml2/openvswitch_agent.ini:
@@ -1279,18 +1204,28 @@ Configure the OpenVSwitch agent in /etc/neutron/plugins/ml2/openvswitch_agent.in
 [DEFAULT]
 
 [agent]
-tunnel_types =vxlan
-vxlan_udp_port = 4789
-l2_population = False
-drop_flows_on_start = False
+tunnel_types=vxlan
+vxlan_udp_port=4789
+l2_population=False
+drop_flows_on_start=False
 
 [ovs]
-integration_bridge = br-int
-tunnel_bridge = br-tun
-local_ip = 192.168.178.95
+integration_bridge=br-int
+tunnel_bridge=br-tun
+local_ip=172.31.52.18
+bridge_mappings=extnet:br-ex
 
 [securitygroup]
-firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+firewall_driver=neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+```
+
+Ensure to set the local_ip to your Node IP:
+
+```
+[ovs]
+...
+local_ip=172.31.52.18
+...
 ```
 
 Restart all services:
@@ -1318,79 +1253,25 @@ ovs-vsctl show
 Should output:
 
 ```
-780de823-fa5a-4119-afa6-d393c0dfb9a2
+c7b7a559-9c84-42a0-b742-02f894b7a039
     Manager "ptcp:6640:127.0.0.1"
-    ovs_version: "2.6.1"
-```
-
-## 2.3.3 Configure Neutron on the Network Node
-
-**On Network node**
-
-Install the components:
-
-```bash
-yum install openstack-neutron -y
-yum install openvswitch -y
-yum install openstack-neutron-openvswitch -y
-```
-
-Edit the /etc/neutron/neutron.conf file and complete the following actions:
-
-```bash
-[DEFAULT]
-bind_host=0.0.0.0
-auth_strategy=keystone
-core_plugin=neutron.plugins.ml2.plugin.Ml2Plugin
-service_plugins=router,metering
-allow_overlapping_ips=True
-debug=False
-log_dir=/var/log/neutron
-rpc_backend=rabbit
-control_exchange=neutron
-
-[agent]
-root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
-
-[oslo_messaging_rabbit]
-kombu_ssl_keyfile=
-kombu_ssl_certfile=
-kombu_ssl_ca_certs=
-rabbit_host=controller.example.com
-rabbit_port=5672
-rabbit_use_ssl=False
-rabbit_userid=guest
-rabbit_password=guest
-```
-
-Configure the OpenVSwitch agent in /etc/neutron/plugins/ml2/openvswitch_agent.ini:
-
-```bash
-[DEFAULT]
-
-[agent]
-tunnel_types =vxlan
-vxlan_udp_port = 4789
-l2_population = False
-drop_flows_on_start = False
-
-[ovs]
-integration_bridge = br-int
-tunnel_bridge = br-tun
-local_ip = 192.168.178.94
-
-[securitygroup]
-firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+        is_connected: true
+    Bridge br-int
+        Controller "tcp:127.0.0.1:6633"
+        fail_mode: secure
+        Port br-int
+            Interface br-int
+                type: internal
+    ovs_version: "2.7.2"
 ```
 
 Configure l3-agent by editing the /etc/neutron/l3_agent.ini file:
 
 ```bash
 [DEFAULT]
-interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-agent_mode = legacy
-external_network_bridge =br-ex
-debug = False
+interface_driver=neutron.agent.linux.interface.OVSInterfaceDriver
+agent_mode=legacy
+debug=False
 ```
 
 Configure the OpenVSwitch br-ex Bridge
@@ -1400,43 +1281,27 @@ systemctl restart openvswitch.service
 ovs-vsctl --may-exist add-br br-ex
 ```
 
-Route traffic to our eth0 interface:
-
-```bash
-iptables -t nat -A POSTROUTING -o eth0 -s 192.168.58.0/24 -j MASQUERADE
-```
-
 Configure dhcp-agent by editing the /etc/neutron/dhcp_agent.ini file:
 
 ```bash
 [DEFAULT]
-interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-resync_interval = 30
-dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
-enable_isolated_metadata = True
-enable_metadata_network = False
-debug = False
-root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
+interface_driver=neutron.agent.linux.interface.OVSInterfaceDriver
+resync_interval=30
+enable_isolated_metadata=False
+enable_metadata_network=False
+debug=False
 state_path=/var/lib/neutron
+root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
 ```
 
 Configure the metadata-agent by editing the /etc/neutron/metadata_agent.ini file:
 
 ```bash
 [DEFAULT]
-nova_metadata_ip = controller.example.com
-metadata_proxy_shared_secret =rootroot
-metadata_workers = 1
-debug = False
-```
-
-Configure the metadata-agent by editing the /etc/neutron/metering_agent.ini file:
-
-```bash
-[DEFAULT]
-driver = neutron.services.metering.drivers.noop.noop_driver.NoopMeteringDriver
-interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-debug = False
+metadata_proxy_shared_secret=a44139447afa46ae
+metadata_workers=2
+debug=False
+nova_metadata_ip=172.31.52.18
 ```
 
 Restart the services:
@@ -1470,68 +1335,65 @@ ovs-vsctl show
 Should output:
 
 ```
-270c499c-4f41-486f-bc75-45d47188132e
+c7b7a559-9c84-42a0-b742-02f894b7a039
     Manager "ptcp:6640:127.0.0.1"
         is_connected: true
     Bridge br-ex
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+        fail_mode: secure
         Port br-ex
             Interface br-ex
+                type: internal
+        Port phy-br-ex
+            Interface phy-br-ex
+                type: patch
+                options: {peer=int-br-ex}
+    Bridge br-tun
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+        fail_mode: secure
+        Port patch-int
+            Interface patch-int
+                type: patch
+                options: {peer=patch-tun}
+        Port br-tun
+            Interface br-tun
                 type: internal
     Bridge br-int
         Controller "tcp:127.0.0.1:6633"
             is_connected: true
         fail_mode: secure
+        Port br-int
+            Interface br-int
+                type: internal
         Port patch-tun
             Interface patch-tun
                 type: patch
                 options: {peer=patch-int}
-        Port br-int
-            Interface br-int
-                type: internal
-    Bridge br-tun
-        Controller "tcp:127.0.0.1:6633"
-            is_connected: true
-        fail_mode: secure
-        Port br-tun
-            Interface br-tun
-                type: internal
-        Port patch-int
-            Interface patch-int
+        Port int-br-ex
+            Interface int-br-ex
                 type: patch
-                options: {peer=patch-tun}
-        Port "vxlan-c0a8b25f"
-            Interface "vxlan-c0a8b25f"
-                type: vxlan
-                options: {df_default="true", in_key=flow, local_ip="192.168.178.94", out_key=flow, remote_ip="192.168.178.95"}
-    ovs_version: "2.6.1"
+                options: {peer=phy-br-ex}
+    ovs_version: "2.7.2"
 ```
-
-**On the Controller:**
 
 Ensure all network agent are running:
 
 ```bash
 openstack network agent list
-+---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
-| ID                  | Agent Type         | Host    | Availability Zone | Alive | State | Binary                |
-+---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
-| 13169785-8a2b-4409- | Metadata agent     | network | None              | True  | UP    | neutron-metadata-     |
-| 9193-9706a3e46bbf   |                    |         |                   |       |       | agent                 |
-| 1927f089-c418-452d- | DHCP agent         | network | nova              | True  | UP    | neutron-dhcp-agent    |
-| 8e04-6109a11e849d   |                    |         |                   |       |       |                       |
-| 68b32216-2b42-47d1- | Open vSwitch agent | compute | None              | True  | UP    | neutron-openvswitch-  |
-| 9648-2f788275f6f4   |                    |         |                   |       |       | agent                 |
-| a4b480a6-b3fd-46da- | Open vSwitch agent | network | None              | True  | UP    | neutron-openvswitch-  |
-| b6b3-e8dc3a133ae7   |                    |         |                   |       |       | agent                 |
-| abbfe6e9-a0e5-4cd9- | L3 agent           | network | nova              | True  | UP    | neutron-l3-agent      |
-| b6b1-13c43bb2b31b   |                    |         |                   |       |       |                       |
-+---------------------+--------------------+---------+-------------------+-------+-------+-----------------------+
++--------------------------------------+--------------------+------------+-------------------+-------+-------+---------------------------+
+| ID                                   | Agent Type         | Host       | Availability Zone | Alive | State | Binary                    |
++--------------------------------------+--------------------+------------+-------------------+-------+-------+---------------------------+
+| 09ce770b-8509-428d-88c5-5e24a7d2bbb0 | Metadata agent     | controller | None              | :-)   | UP    | neutron-metadata-agent    |
+| 48ac34bc-aa8d-49e3-b2f5-ab6dc8d95f16 | L3 agent           | controller | nova              | :-)   | UP    | neutron-l3-agent          |
+| ec7c1424-41e1-4713-9881-42be0ab779de | DHCP agent         | controller | nova              | :-)   | UP    | neutron-dhcp-agent        |
+| f0bdd034-5546-48d1-a422-ea1682f74f6b | Open vSwitch agent | controller | None              | :-)   | UP    | neutron-openvswitch-agent |
++--------------------------------------+--------------------+------------+-------------------+-------+-------+---------------------------+
 ```
 
 
 ## 2.4.1 Do the network Configuration:
-
-**On the Controller:**
 
 Create the base networks:
 
@@ -1544,15 +1406,6 @@ openstack router create private-router
 openstack router add subnet private-router private-subnet
 neutron router-gateway-set private-router public
 ```
-
-openstack network create --external --default public
-openstack subnet create --ip-version 4 --network public --subnet-range 192.168.58.0/24 --no-dhcp public-subnet
-openstack network create private
-openstack subnet create --network private --subnet-range 10.0.0.0/24 --dns-nameserver 8.8.8.8 private_subnet
-openstack router create private-router
-openstack router add subnet private-router private_subnet
-neutron router-gateway-set private-router public
-
 
 ## 2.7 Dashboard install and configure
 
