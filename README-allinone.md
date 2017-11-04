@@ -1967,9 +1967,9 @@ Finalize the configuration of OpenStack:
 Create Flavors:
 
 ```bash
-openstack flavor create --id 0 --ram 512   --vcpus 1 --disk 10  m1.tiny
-openstack flavor create --id 1 --ram 1024  --vcpus 1 --disk 10  m1.small
-openstack flavor create --id 2 --ram 2048  --vcpus 1 --disk 10  m1.large
+openstack flavor create --id 0 --ram 512   --vcpus 1 --disk 1  m1.tiny
+openstack flavor create --id 1 --ram 1024  --vcpus 1 --disk 1  m1.small
+openstack flavor create --id 2 --ram 2048  --vcpus 1 --disk 1  m1.large
 ```
 
 Restart all the services:
