@@ -1435,18 +1435,64 @@ Restart the network:
 systemctl restart network
 ```
 
-## 2.4.1 Do the network Configuration:
-
-Create the base networks:
+Verify br-ex is bridge to eth0:
 
 ```bash
-openstack network create --external public
-openstack subnet create --network public --subnet-range 172.24.4.224/28 --dns-nameserver 8.8.8.8 public_subnet
-openstack network create private
-openstack subnet create --network private --subnet-range 10.0.0.0/24 --dns-nameserver 8.8.8.8 private_subnet
-openstack router create private-router
-openstack router add subnet private-router private-subnet
-neutron router-gateway-set private-router public
+ip addr list
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc mq state UP qlen 1000
+    link/ether 12:2e:14:32:c6:3e brd ff:ff:ff:ff:ff:ff
+    inet 172.31.52.18/20 brd 172.31.63.255 scope global dynamic eth0
+       valid_lft 3586sec preferred_lft 3586sec
+    inet6 fe80::102e:14ff:fe32:c63e/64 scope link
+       valid_lft forever preferred_lft forever
+3: ovs-system: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN qlen 1000
+    link/ether d6:70:96:99:b5:e8 brd ff:ff:ff:ff:ff:ff
+4: br-tun: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN qlen 1000
+    link/ether ea:66:13:c6:76:4a brd ff:ff:ff:ff:ff:ff
+5: br-int: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN qlen 1000
+    link/ether ba:74:52:f3:ae:42 brd ff:ff:ff:ff:ff:ff
+6: br-ex: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN qlen 1000
+    link/ether 12:2e:14:32:c6:3e brd ff:ff:ff:ff:ff:ff
+    inet 172.31.52.18/24 brd 172.31.52.255 scope global br-ex
+       valid_lft forever preferred_lft forever
+    inet6 fe80::102e:14ff:fe32:c63e/64 scope link
+       valid_lft forever preferred_lft forever
+```
+
+## 2.4.1 Do the network Configuration:
+
+Create Public Floating Network (All Tenants)
+
+This is the virtual network that OpenStack will bridge to the outside world. You will assign public IPs to your instances from this network.
+
+```bash
+neutron net-create public --router:external=True --provider:network_type=vxlan --provider:segmentation_id=96
+neutron subnet-create --name public_subnet --disable-dhcp --allocation-pool start=10.20.0.100,end=10.20.0.150 public 10.20.0.0/24
+```
+
+Setup Tenant Network/Subnet
+
+This is the private network your instances will attach to. Instances will be issued IPs from this private IP subnet.
+
+```bash
+. keystonerc_demo
+neutron net-create private
+neutron subnet-create --name private_subnet --dns-nameserver 8.8.8.8 --dns-nameserver 8.8.4.4 --allocation-pool start=10.0.30.10,end=10.0.30.254 private 10.0.30.0/24
+
+Create an External Router to Attach to floating IP Network
+
+This router will attach to your private subnet and route to the public network, which is where your floating IPs are located.
+
+``bash
+neutron router-create extrouter
+neutron router-gateway-set extrouter public
+neutron router-interface-add extrouter private_subnet
 ```
 
 ## 2.7 Dashboard install and configure
