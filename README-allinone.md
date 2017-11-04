@@ -952,9 +952,12 @@ systemctl status openstack-nova-api.service openstack-nova-consoleauth.service o
 Start the Compute service including its dependencies and configure them to start automatically when the system boots:
 
 ```bash
-systemctl enable libvirtd.service openstack-nova-compute.service
-systemctl restart libvirtd.service openstack-nova-compute.service
-systemctl status libvirtd.service openstack-nova-compute.service
+systemctl enable libvirtd.service 
+systemctl enable openstack-nova-compute.service
+systemctl restart libvirtd.service 
+systemctl restart openstack-nova-compute.service
+systemctl status libvirtd.service 
+systemctl status openstack-nova-compute.service
 ```
 
 On the Controller Node Verify operation of the Compute service:
@@ -1307,6 +1310,9 @@ nova_metadata_ip=172.31.52.18
 Enable the services:
 
 ```bash
+systemctl enable openstack-nova-compute.service
+systemctl enable libvirtd.service openstack-nova-compute.service
+
 systemctl enable openvswitch.service
 systemctl enable neutron-openvswitch-agent.service
 systemctl enable neutron-ovs-cleanup.service
