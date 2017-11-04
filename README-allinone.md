@@ -23,7 +23,6 @@ ip addr list
 
 On the controller Node:
 ```bash
-echo 'controller' > /etc/hostname
 echo '192.168.178.93 controller.example.com controller
 192.168.178.93 compute.example.com compute
 192.168.178.93 network.example.com network' >> /etc/hosts
