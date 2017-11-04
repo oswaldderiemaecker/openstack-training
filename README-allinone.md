@@ -205,7 +205,7 @@ Install KeyStone:
 yum install openstack-keystone httpd mod_wsgi -y
 ```
 
-Edit the /etc/keystone/keystone.conf file and complete with the following:
+Edit the /etc/keystone/keystone.conf file and replace with the following:
 
 ```
 [DEFAULT]
@@ -243,7 +243,7 @@ Configure the Apache HTTP server:
 Edit the /etc/httpd/conf/httpd.conf file and configure the ServerName option to reference the controller node IP:
 
 ```
-ServerName 172.31.52.18
+ServerName 192.168.178.93
 ```
 
 Create a link to the /usr/share/keystone/wsgi-keystone.conf file:
@@ -326,12 +326,6 @@ openstack role add --project demo --user demo user
 
 ## 2.1.3 Verify operation of the Identity service
 
-**On Controller node**
-
-For security reasons, disable the temporary authentication token mechanism:
-
-Edit the /etc/keystone/keystone-paste.ini file and remove admin_token_auth from the [pipeline:public_api], [pipeline:admin_api], and [pipeline:api_v3] sections if it exist.
-
 Unset the temporary OS_AUTH_URL and OS_PASSWORD environment variable:
 
 ```bash
@@ -398,7 +392,7 @@ Install the packages:
 yum install openstack-glance -y
 ```
 
-Edit the /etc/glance/glance-api.conf file and complete the following actions:
+Edit the /etc/glance/glance-api.conf file and replace with the following actions:
 
 ```
 [DEFAULT]
@@ -435,7 +429,7 @@ policy_file = /etc/glance/policy.json
 flavor = keystone
 ```
 
-Edit the /etc/glance/glance-registry.conf file and complete the following actions:
+Edit the /etc/glance/glance-registry.conf file and replace with the following actions:
 
 ```
 [DEFAULT]
