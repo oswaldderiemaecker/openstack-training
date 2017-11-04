@@ -969,15 +969,23 @@ systemctl status openstack-nova-api.service openstack-nova-consoleauth.service o
 Start the Compute service including its dependencies and configure them to start automatically when the system boots:
 
 ```bash
-systemctl enable libvirtd.service openstack-nova-compute.service openstack-nova-placement-api.service
-systemctl start libvirtd.service openstack-nova-compute.service openstack-nova-placement-api.service
-systemctl status libvirtd.service openstack-nova-compute.service openstack-nova-placement-api.service
+systemctl enable libvirtd.service openstack-nova-compute.service
+systemctl restart libvirtd.service openstack-nova-compute.service
+systemctl status libvirtd.service openstack-nova-compute.service
 ```
 
 On the Controller Node Verify operation of the Compute service:
 
 ```bash
 openstack compute service list
++----+------------------+------------+----------+---------+-------+----------------------------+
+| ID | Binary           | Host       | Zone     | Status  | State | Updated At                 |
++----+------------------+------------+----------+---------+-------+----------------------------+
+|  1 | nova-conductor   | controller | internal | enabled | up    | 2017-11-04T10:10:18.000000 |
+|  2 | nova-consoleauth | controller | internal | enabled | up    | 2017-11-04T10:10:17.000000 |
+|  3 | nova-scheduler   | controller | internal | enabled | up    | 2017-11-04T10:10:17.000000 |
+|  6 | nova-compute     | controller | nova     | enabled | up    | 2017-11-04T10:10:20.000000 |
++----+------------------+------------+----------+---------+-------+----------------------------+
 ```
 
 ## 2.3.1 Networking (neutron) service install and setup
