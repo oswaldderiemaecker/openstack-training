@@ -934,6 +934,49 @@ su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova
 su -s /bin/sh -c "nova-manage db sync" nova
 ```
 
+Configure Nova Placement:
+
+```bash
+cd /etc/httpd/conf.d
+vi 00-nova-placement-api.conf
+Listen 8778
+
+<VirtualHost *:8778>
+  WSGIProcessGroup nova-placement-api
+  WSGIApplicationGroup %{GLOBAL}
+  WSGIPassAuthorization On
+  WSGIDaemonProcess nova-placement-api processes=3 threads=1 user=nova group=nova
+  WSGIScriptAlias / /usr/bin/nova-placement-api
+
+  <IfVersion >= 2.4>
+    ErrorLogFormat "%M"
+  </IfVersion>
+  ErrorLog /var/log/nova/nova-placement-api.log
+  #SSLEngine On
+  #SSLCertificateFile ...
+  #SSLCertificateKeyFile ...
+<Directory /usr/bin>
+      Require all granted
+</Directory>
+</VirtualHost>
+
+Alias /nova-placement-api /usr/bin/nova-placement-api
+<Location /nova-placement-api>
+  SetHandler wsgi-script
+  Options +ExecCGI
+  WSGIProcessGroup nova-placement-api
+  WSGIApplicationGroup %{GLOBAL}
+  WSGIPassAuthorization On
+</Location>
+```
+
+Change the owner of the nova placement api:
+
+```bash
+chown nova:nova /usr/bin/nova-placement-api
+chown nova:nova /var/log/nova/nova-placement-api.log
+```
+
 Verify nova cell0 and cell1 are registered correctly:
 
 ```bash
