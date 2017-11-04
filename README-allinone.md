@@ -1892,6 +1892,13 @@ REST_API_REQUIRED_SETTINGS = ['OPENSTACK_HYPERVISOR_FEATURES',
 HORIZON_CONFIG["disallow_iframe_embed"] = True
 ```
 
+Remove the openstack-dashboard.conf file:
+
+```
+cd /etc/httpd/conf.d
+rm openstack-dashboard.conf
+```
+
 Configure the VirtualHost:
 
 ```bash
