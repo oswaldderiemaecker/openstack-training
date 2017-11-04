@@ -1596,6 +1596,13 @@ openstack network agent list
 | ec7c1424-41e1-4713-9881-42be0ab779de | DHCP agent         | controller | nova              | :-)   | UP    | neutron-dhcp-agent        |
 | f0bdd034-5546-48d1-a422-ea1682f74f6b | Open vSwitch agent | controller | None              | :-)   | UP    | neutron-openvswitch-agent |
 +--------------------------------------+--------------------+------------+-------------------+-------+-------+---------------------------+
+
+openstack hypervisor list
++----+-----------------------------+-----------------+--------------+-------+
+| ID | Hypervisor Hostname         | Hypervisor Type | Host IP      | State |
++----+-----------------------------+-----------------+--------------+-------+
+|  2 | ip-172-31-27-1.ec2.internal | QEMU            | 172.31.27.1  | up    |
++----+-----------------------------+-----------------+--------------+-------+
 ```
 
 ## 2.7 Dashboard install and configure
