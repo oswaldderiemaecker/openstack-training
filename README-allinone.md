@@ -1508,12 +1508,13 @@ This is the private network your instances will attach to. Instances will be iss
 . keystonerc_demo
 neutron net-create private
 neutron subnet-create --name private_subnet --dns-nameserver 8.8.8.8 --dns-nameserver 8.8.4.4 --allocation-pool start=10.0.30.10,end=10.0.30.254 private 10.0.30.0/24
+```
 
 Create an External Router to Attach to floating IP Network
 
 This router will attach to your private subnet and route to the public network, which is where your floating IPs are located.
 
-``bash
+```bash
 neutron router-create extrouter
 neutron router-gateway-set extrouter public
 neutron router-interface-add extrouter private_subnet
