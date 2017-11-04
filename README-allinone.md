@@ -1472,8 +1472,9 @@ Create Public Floating Network (All Tenants)
 This is the virtual network that OpenStack will bridge to the outside world. You will assign public IPs to your instances from this network.
 
 ```bash
+. keystonerc_admin
 neutron net-create public --router:external=True --provider:network_type=vxlan --provider:segmentation_id=96
-neutron subnet-create --name public_subnet --disable-dhcp --allocation-pool start=10.20.0.100,end=10.20.0.150 public 10.20.0.0/24
+neutron subnet-create --name public_subnet --disable-dhcp --allocation-pool start=172.31.52.100,end=172.31.52.150 public 172.31.52.0/24
 ```
 
 Setup Tenant Network/Subnet
