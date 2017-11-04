@@ -707,44 +707,6 @@ systemctl status openstack-cinder-volume.service
 systemctl status openstack-cinder-backup.service
 ```
 
-## 2.2.2 Swift service install and configure on Controller node
-
-**On Controller node**
-
-Create the cinder user:
-
-```bash
-openstack user create --domain default --password-prompt swift
-```
-
-Add the admin role to the glance user and service project:
-
-```bash
-openstack role add --project service --user swift admin
-```
-
-Create the glance service entity:
-
-```bash
-openstack service create --name swift --description "OpenStack Object Storage" object-store
-```
-
-Create the Image service API endpoints:
-
-```bash
-openstack endpoint create --region RegionOne object-store public http://controller.example.com:8080/v1/AUTH_%\(tenant_id\)s
-openstack endpoint create --region RegionOne object-store internal http://controller.example.com:8080/v1/AUTH_%\(tenant_id\)s
-openstack endpoint create --region RegionOne object-store admin http://controller.example.com:8080/v1
-```
-
-Install the packages:
-
-```bash
-yum install openstack-swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware memcached -y
-```
-
-
-
 ## 2.2.2 Compute (nova) service install and configure on Controller node
 
 **On Controller node**
@@ -763,6 +725,7 @@ Create the nova_api and nova databases:
 ```bash
 CREATE DATABASE nova_api;
 CREATE DATABASE nova;
+CREATE DATABASE nova_cell0;
 ```
 
 Grant proper access to the databases:
@@ -772,6 +735,8 @@ GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'localhost' IDENTIFIED BY 'rootroot
 GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%' IDENTIFIED BY 'rootroot';
 GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'localhost' IDENTIFIED BY 'rootroot';
 GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%' IDENTIFIED BY 'rootroot';
+GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'localhost' IDENTIFIED BY 'rootroot';
+GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'%' IDENTIFIED BY 'rootroot';
 ```
 Source the admin credentials to gain access to admin-only CLI commands:
 
@@ -797,7 +762,7 @@ Create the nova service entity:
 openstack service create --name nova --description "OpenStack Compute" compute
 ```
 
-Create the Compute service API endpoints:
+Create the Nova Compute service API endpoints:
 
 ```bash
 openstack endpoint create --region RegionOne compute public http://controller.example.com:8774/v2.1/%\(tenant_id\)s
@@ -805,55 +770,77 @@ openstack endpoint create --region RegionOne compute internal http://controller.
 openstack endpoint create --region RegionOne compute admin http://controller.example.com:8774/v2.1/%\(tenant_id\)s
 ```
 
+Create the nova placement user:
+
+```bash
+openstack user create --domain default --password-prompt placement
+```
+
+Add the admin role to the nova placement user:
+
+```bash
+openstack role add --project services --user placement admin
+```
+
+Create the nova placement service entity:
+
+```bash
+openstack service create --name placement --description "Placement API" placement
+```
+
+Create the Nova Placement service API endpoints:
+
+```bash
+openstack endpoint create --region RegionOne placement public http://controller.example.com:8778
+openstack endpoint create --region RegionOne placement internal http://controller.example.com:8778
+openstack endpoint create --region RegionOne placement admin http://controller.example.com:8778
+```
+
 Install the packages:
 
 ```bash
-yum install openstack-nova-api openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler -y
+yum install openstack-nova-api openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler openstack-nova-compute openstack-nova-placement-api -y
 ```
 
 Edit the /etc/nova/nova.conf file and complete the following actions:
 
 ```bash
 [DEFAULT]
-auth_strategy=keystone
-use_forwarded_for=False
-fping_path=/usr/sbin/fping
 rootwrap_config=/etc/nova/rootwrap.conf
-allow_resize_to_same_host=False
-default_floating_pool=public
+compute_driver=libvirt.LibvirtDriver
+allow_resize_to_same_host=True
+vif_plugging_is_fatal=True
+vif_plugging_timeout=300
+force_raw_images=True
+reserved_host_memory_mb=512
+cpu_allocation_ratio=16.0
+ram_allocation_ratio=1.5
+heal_instance_info_cache_interval=60
 force_snat_range=0.0.0.0/0
 metadata_host=controller.example.com
 dhcp_domain=novalocal
-use_neutron=True
-notify_api_faults=False
+firewall_driver=nova.virt.firewall.NoopFirewallDriver
 state_path=/var/lib/nova
-scheduler_host_subset_size=1
-scheduler_use_baremetal_filters=False
-scheduler_available_filters=nova.scheduler.filters.all_filters
-scheduler_default_filters=RetryFilter,AvailabilityZoneFilter,RamFilter,DiskFilter,ComputeFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,ServerGroupAntiAffinityFilter,ServerGroupAffinityFilter,CoreFilter
-scheduler_weight_classes=nova.scheduler.weights.all_weighers
-scheduler_host_manager=host_manager
-scheduler_driver=filter_scheduler
-max_io_ops_per_host=8
-max_instances_per_host=50
-scheduler_max_attempts=3
 report_interval=10
+service_down_time=60
 enabled_apis=osapi_compute,metadata
 osapi_compute_listen=0.0.0.0
 osapi_compute_listen_port=8774
-osapi_compute_workers=1
+osapi_compute_workers=2
 metadata_listen=0.0.0.0
 metadata_listen_port=8775
-metadata_workers=1
-service_down_time=60
-vif_plugging_is_fatal=True
-vif_plugging_timeout=300
-firewall_driver=nova.virt.firewall.NoopFirewallDriver
+metadata_workers=2
 debug=False
 log_dir=/var/log/nova
-rpc_backend=rabbit
+transport_url=rabbit://guest:guest@controller.example.com:5672/
 image_service=nova.image.glance.GlanceImageService
 osapi_volume_listen=0.0.0.0
+volume_api_class=nova.volume.cinder.API
+
+[api]
+auth_strategy=keystone
+use_forwarded_for=False
+fping_path=/usr/sbin/fping
 
 [api_database]
 connection=mysql+pymysql://nova:rootroot@controller.example.com/nova_api
@@ -862,10 +849,19 @@ connection=mysql+pymysql://nova:rootroot@controller.example.com/nova_api
 catalog_info=volumev2:cinderv2:publicURL
 
 [conductor]
-workers=1
+workers=2
 
 [database]
 connection=mysql+pymysql://nova:rootroot@controller.example.com/nova
+
+[filter_scheduler]
+host_subset_size=1
+max_io_ops_per_host=8
+max_instances_per_host=50
+available_filters=nova.scheduler.filters.all_filters
+enabled_filters=RetryFilter,AvailabilityZoneFilter,RamFilter,DiskFilter,ComputeFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,ServerGroupAntiAffinityFilter,ServerGroupAffinityFilter,CoreFilter
+use_baremetal_filters=False
+weight_classes=nova.scheduler.weights.all_weighers
 
 [glance]
 api_servers=controller.example.com:9292
@@ -873,149 +869,109 @@ api_servers=controller.example.com:9292
 [keystone_authtoken]
 auth_uri=http://controller.example.com:5000/
 auth_type=password
-username=nova
-project_name=services
 auth_url=http://controller.example.com:35357
+username=nova
 password=rootroot
-
-[libvirt]
-vif_driver=nova.virt.libvirt.vif.LibvirtGenericVIFDriver
-
-[oslo_concurrency]
-lock_path=/var/lib/nova/tmp
-
-[oslo_messaging_rabbit]
-kombu_ssl_keyfile=
-kombu_ssl_certfile=
-kombu_ssl_ca_certs=
-rabbit_host=controller.example.com
-rabbit_port=5672
-rabbit_use_ssl=False
-rabbit_userid=guest
-rabbit_password=guest
-
-[oslo_policy]
-policy_file=/etc/nova/policy.json
-
-[vnc]
-novncproxy_base_url=http://0.0.0.0:6080/vnc_auto.html
-novncproxy_host=0.0.0.0
-novncproxy_port=6080
-
-[wsgi]
-api_paste_config=api-paste.ini
-```
-
-Populate the Compute databases:
-
-```bash
-su -s /bin/sh -c "nova-manage api_db sync" nova
-su -s /bin/sh -c "nova-manage db sync" nova
-```
-
-Start the Compute services and configure them to start when the system boots:
-
-```bash
-systemctl enable openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
-systemctl start openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
-systemctl status openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
-```
-
-## 2.2.3 Compute (nova) service install and configure on Compute Node
-
-**On Compute node**
-
-Set OpenStack Newton Repository on the Compute Node
-
-```bash
-yum install centos-release-openstack-newton -y
-yum update -y
-yum install python-openstackclient -y
-```
-
-Install the packages:
-
-```bash
-yum install openstack-nova-compute -y
-```
-
-Edit the /etc/nova/nova.conf file and complete the following actions:
-
-```
-[DEFAULT]
-auth_strategy=keystone
-rootwrap_config=/etc/nova/rootwrap.conf
-allow_resize_to_same_host=False
-reserved_host_memory_mb=512
-heal_instance_info_cache_interval=60
-force_snat_range=0.0.0.0/0
-metadata_host=controller.example.com
-dhcp_domain=novalocal
-use_neutron=True
-notify_api_faults=False
-state_path=/var/lib/nova
-report_interval=10
-compute_manager=nova.compute.manager.ComputeManager
-service_down_time=60
-compute_driver=libvirt.LibvirtDriver
-vif_plugging_is_fatal=True
-vif_plugging_timeout=300
-firewall_driver=nova.virt.firewall.NoopFirewallDriver
-force_raw_images=True
-debug=False
-log_dir=/var/log/nova
-rpc_backend=rabbit
-image_service=nova.image.glance.GlanceImageService
-volume_api_class=nova.volume.cinder.API
-
-[api_database]
-connection=mysql+pymysql://nova:rootroot@controller.example.com/nova_api
-
-[cinder]
-catalog_info=volumev2:cinderv2:publicURL
-
-[database]
-connection=mysql+pymysql://nova:rootroot@controller.example.com/nova
-
-[glance]
-api_servers=controller.example.com:9292
+project_name=services
 
 [libvirt]
 virt_type=qemu
 inject_password=False
 inject_key=False
 inject_partition=-1
-live_migration_uri=qemu+tcp://%s/system
+live_migration_uri=qemu+ssh://nova_migration@%s/system?keyfile=/etc/nova/migration/identity
 cpu_mode=none
 vif_driver=nova.virt.libvirt.vif.LibvirtGenericVIFDriver
+
+[neutron]
+url=http://controller.example.com:9696
+region_name=RegionOne
+ovs_bridge=br-int
+default_floating_pool=nova
+extension_sync_interval=600
+service_metadata_proxy=True
+metadata_proxy_shared_secret=a44139447afa46ae
+timeout=60
+auth_type=v3password
+auth_url=http://controller.example.com:35357/v3
+project_name=services
+project_domain_name=Default
+username=neutron
+user_domain_name=Default
+password=rootroot
+
+[notifications]
+notify_api_faults=False
 
 [oslo_concurrency]
 lock_path=/var/lib/nova/tmp
 
 [oslo_messaging_rabbit]
-kombu_ssl_keyfile=
-kombu_ssl_certfile=
-kombu_ssl_ca_certs=
-rabbit_host=controller.example.com
-rabbit_port=5672
-rabbit_use_ssl=False
-rabbit_userid=guest
-rabbit_password=guest
+ssl=False
+
+[oslo_policy]
+policy_file=/etc/nova/policy.json
+
+[placement]
+os_region_name=RegionOne
+auth_type=password
+auth_url=http://controller.example.com:5000/v3
+project_name=services
+project_domain_name=Default
+username=placement
+user_domain_name=Default
+password=rootroot
+
+[scheduler]
+host_manager=host_manager
+driver=filter_scheduler
+max_attempts=3
 
 [vnc]
 enabled=True
 keymap=en-us
 vncserver_listen=0.0.0.0
-vncserver_proxyclient_address=compute.example.com
-novncproxy_base_url=http://controller.example.com:6080/vnc_auto.html
+vncserver_proxyclient_address=34.238.85.43
+novncproxy_base_url=http://34.238.85.43:6080/vnc_auto.html
+novncproxy_host=0.0.0.0
+novncproxy_port=6080
+
+[wsgi]
+api_paste_config=api-paste.ini
+
+[placement_database]
+connection=mysql+pymysql://nova_placement:rootroot@controller.example.com/nova_placement
+```
+
+Populate the Compute databases:
+
+```bash
+su -s /bin/sh -c "nova-manage api_db sync" nova
+su -s /bin/sh -c "nova-manage cell_v2 map_cell0" nova
+su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova
+su -s /bin/sh -c "nova-manage db sync" nova
+```
+
+Verify nova cell0 and cell1 are registered correctly:
+
+```bash
+nova-manage cell_v2 list_cells
+```
+
+Start the Compute services and configure them to start when the system boots:
+
+```bash
+systemctl enable openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
+systemctl restart openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
+systemctl status openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
 ```
 
 Start the Compute service including its dependencies and configure them to start automatically when the system boots:
 
 ```bash
-systemctl enable libvirtd.service openstack-nova-compute.service
-systemctl start libvirtd.service openstack-nova-compute.service
-systemctl status libvirtd.service openstack-nova-compute.service
+systemctl enable libvirtd.service openstack-nova-compute.service openstack-nova-placement-api.service
+systemctl start libvirtd.service openstack-nova-compute.service openstack-nova-placement-api.service
+systemctl status libvirtd.service openstack-nova-compute.service openstack-nova-placement-api.service
 ```
 
 On the Controller Node Verify operation of the Compute service:
