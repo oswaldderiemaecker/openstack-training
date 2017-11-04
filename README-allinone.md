@@ -620,6 +620,15 @@ volumes_dir=/var/lib/cinder/volumes
 volume_backend_name=lvm
 ```
 
+Change the iscsi_ip_address to your controller IP:
+
+```bash
+[lvm]
+...
+iscsi_ip_address=192.168.178.93
+...
+```
+
 Populate the Compute databases:
 
 ```bash
@@ -632,7 +641,7 @@ Create the volume folder:
 mkdir -p /var/lib/cinder/volumes
 ```
 
-Lets create the LVM Volume with the second disk sdb.
+Lets create the LVM Volume.
 
 Verify the disk is attached:
 
@@ -644,29 +653,45 @@ Sector size (logical/physical): 512 bytes / 512 bytes
 I/O size (minimum/optimal): 512 bytes / 512 bytes
 ```
 
-Create the LVM volume:
+Create the LVM volume (using loop for testing purpose, should use lvm partition):
 
 ```bash
-pvcreate /dev/sdb
-vgcreate cinder-volumes /dev/sdb
+dd if=/dev/zero of=/var/lib/cinder/cinder-volumes bs=1G count=4
+losetup /dev/loop0 /var/lib/cinder/cinder-volumes
+pvcreate /dev/loop0
+vgcreate "cinder-volumes" /dev/loop0
 vgdisplay
 ```
 
-Edit the file /etc/lvm/lvm.conf:
+Create a systemd unit file /usr/lib/systemd/system/openstack-losetup.service to mount our loop device:
 
 ```bash
-devices {
-...
-filter = [ "a/sdb/", "r/.*/"]
+[Unit]
+    Description=Setup cinder-volume loop device
+    DefaultDependencies=false
+    Before=openstack-cinder-volume.service
+    After=local-fs.target
+
+    [Service]
+    Type=oneshot
+    ExecStart=/usr/bin/sh -c '/usr/sbin/losetup -j /var/lib/cinder/cinder-volumes | /usr/bin/grep /var/lib/cinder/cinder-volumes || /usr/sbin/losetup -f /var/lib/cinder/cinder-volumes'
+    ExecStop=/usr/bin/sh -c '/usr/sbin/losetup -j /var/lib/cinder/cinder-volumes | /usr/bin/cut -d : -f 1 | /usr/bin/xargs /usr/sbin/losetup -d'
+    TimeoutSec=60
+    RemainAfterExit=yes
+
+    [Install]
+    RequiredBy=openstack-cinder-volume.service
 ```
 
 Restart the service:
 
 ```bash
+systemctl enable openstack-losetup.service
 systemctl enable openstack-cinder-api.service
 systemctl enable openstack-cinder-scheduler.service 
 systemctl enable openstack-cinder-volume.service 
 systemctl enable openstack-cinder-backup.service
+systemctl start openstack-losetup.service
 systemctl restart openstack-cinder-api.service
 systemctl restart openstack-cinder-scheduler.service 
 systemctl restart openstack-cinder-volume.service 
