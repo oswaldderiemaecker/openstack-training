@@ -676,10 +676,15 @@ Create a systemd unit file /usr/lib/systemd/system/openstack-losetup.service to 
     RequiredBy=openstack-cinder-volume.service
 ```
 
+Enable the service at boot:
+
+```bash
+ln -s /usr/lib/systemd/system/openstack-losetup.service /etc/systemd/system/multi-user.target.wants/openstack-losetup.service
+```
+
 Restart the service:
 
 ```bash
-systemctl enable openstack-losetup.service
 systemctl enable openstack-cinder-api.service
 systemctl enable openstack-cinder-scheduler.service 
 systemctl enable openstack-cinder-volume.service 
