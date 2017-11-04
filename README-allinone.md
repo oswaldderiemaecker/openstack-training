@@ -1587,20 +1587,21 @@ HORIZON_CONFIG = {
 HORIZON_CONFIG["password_autocomplete"] = "off"
 HORIZON_CONFIG["images_panel"] = "legacy"
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-SECRET_KEY = '8c725ee43cc84768bda3d611136b2b6c'
-
+SECRET_KEY = '409cc64b19ad44aea45fcef49746fabe'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+
+
         'LOCATION': '127.0.0.1:11211',
+
+
     }
 }
-
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-OPENSTACK_KEYSTONE_URL = "http://controller.example.com:5000/v2.0"
+OPENSTACK_KEYSTONE_URL = "http://controller.example.com:5000/v3"
 OPENSTACK_KEYSTONE_DEFAULT_ROLE = "_member_"
-
 OPENSTACK_KEYSTONE_BACKEND = {
     'can_edit_domain': True,
     'can_edit_group': True,
@@ -1609,12 +1610,10 @@ OPENSTACK_KEYSTONE_BACKEND = {
     'can_edit_user': True,
     'name': 'native',
 }
-
 OPENSTACK_HYPERVISOR_FEATURES = {
     'can_set_mount_point': False,
     'can_set_password': False,
 }
-
 OPENSTACK_CINDER_FEATURES = {
     'enable_backup': False,
 }
@@ -1629,13 +1628,19 @@ OPENSTACK_NEUTRON_NETWORK = {
     'enable_vpn': False,
     'profile_support': None,
 }
-
+OPENSTACK_HEAT_STACK = {
+    'enable_user_pass': True
+}
 API_RESULT_LIMIT = 1000
 API_RESULT_PAGE_SIZE = 20
 TIME_ZONE = "UTC"
 POLICY_FILES_PATH = '/etc/openstack-dashboard'
 LOGGING = {
     'version': 1,
+
+
+
+
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
@@ -1884,6 +1889,58 @@ FILE_UPLOAD_TEMP_DIR = '/var/tmp'
 REST_API_REQUIRED_SETTINGS = ['OPENSTACK_HYPERVISOR_FEATURES',
                               'LAUNCH_INSTANCE_DEFAULTS',
                               'OPENSTACK_IMAGE_FORMATS']
+HORIZON_CONFIG["disallow_iframe_embed"] = True
+```
+
+Configure the VirtualHost:
+
+```bash
+vi 15-horizon_vhost.conf
+
+<VirtualHost *:80>
+  ServerName 34.238.85.43
+
+  DocumentRoot "/var/www/"
+
+  Alias /dashboard/static "/usr/share/openstack-dashboard/static"
+
+  <Directory "/var/www/">
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride None
+    Require all granted
+  </Directory>
+
+  <Directory /usr/share/openstack-dashboard/openstack_dashboard/wsgi>
+    Options All
+    AllowOverride All
+    Require all granted
+  </Directory>
+
+  <Directory /usr/share/openstack-dashboard/static>
+    Options All
+    AllowOverride All
+    Require all granted
+  </Directory>
+
+  ErrorLog "/var/log/httpd/horizon_error.log"
+  ServerSignature Off
+  CustomLog "/var/log/httpd/horizon_access.log" combined
+
+  RedirectMatch permanent  ^/$ /dashboard
+
+  WSGIApplicationGroup %{GLOBAL}
+  WSGIDaemonProcess apache group=apache processes=3 threads=10 user=apache
+  WSGIProcessGroup apache
+  WSGIScriptAlias /dashboard "/usr/share/openstack-dashboard/openstack_dashboard/wsgi/django.wsgi"
+</VirtualHost>
+```
+
+Ensure to set your Public IP address:
+
+```bash
+<VirtualHost *:80>
+  ServerName 34.238.85.43
+  ...
 ```
 
 Restart Apache:
