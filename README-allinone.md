@@ -1,13 +1,6 @@
-I am using the Mac for installation and have the VirtualBox installed.
+For the Newton openstack setup we must have one virtual machine ready with at least below requirement:
 
-For the Newton openstack setup we must have the three virtual machine ready with atleast below requirement:
-
-* Controller Node: 2 processor, 4 GB memory, and 20 GB storage (192.168.178.93)
-  * Create a second HDD of 20 GB (Dynamically Allocated)
-* Compute Node: 2 processor, 4 GB memory, and 20 GB storage (192.168.178.95)
-* Network Node: 1 processor, 1 GB memory, and 10 GB storage (192.168.178.94)
-
-Each VM has a NAT Network and a Host-Only Adapter set to the same Adapter.
+* Controller Node: 2 processor, 8 GB memory, and 16 GB storage
 
 For simplicity we will use the password **rootroot** for all passwords.
 
@@ -22,28 +15,18 @@ configuration.
 
 ## 1.2 Configure Hosts and the Hostname
 
+Get your IP address:
+
+```bash
+ip addr list
+```
+
 On the controller Node:
 ```bash
 echo 'controller' > /etc/hostname
 echo '192.168.178.93 controller.example.com controller
-192.168.178.95 compute.example.com compute
-192.168.178.94 network.example.com network' >> /etc/hosts
-```
-
-On the Network Node:
-```bash
-echo 'network' > /etc/hostname
-echo '192.168.178.93 controller.example.com controller
-192.168.178.95 compute.example.com compute
-192.168.178.94 network.example.com network' >> /etc/hosts
-```
-
-On the Compute Node:
-```bash
-echo 'compute' > /etc/hostname
-echo '192.168.178.93 controller.example.com controller
-192.168.178.95 compute.example.com compute
-192.168.178.94 network.example.com network' >> /etc/hosts
+192.168.178.93 compute.example.com compute
+192.168.178.93 network.example.com network' >> /etc/hosts
 ```
 
 ## 1.3 Stop and disable firewalld & NetworkManager Service
@@ -61,6 +44,7 @@ Disable SELinux using below command:
 
 ```bash
 setenforce 0 ; sed -i 's/=enforcing/=disabled/g' /etc/sysconfig/selinux
+getenforce
 ```
 
 ## 1.4 Upgrade the OS and reboot:
@@ -74,48 +58,10 @@ yum update -y ; reboot
 **On the controller Node:**
 
 ```bash
-ping -c 4 network
-ping -c 4 compute
 ping -c 4 www.google.com
 ```
 
-**On the Network Node:**
-
-```bash
-ping -c 4 controller
-ping -c 4 compute
-ping -c 4 www.google.com
-```
-
-**On the Compute Node:**
-
-```bash
-ping -c 4 controller
-ping -c 4 network
-ping -c 4 www.google.com
-```
-
-## 1.6 Create SSH Access:
-
-**On the controller Node:**
-
-```bash
-ssh-keygen
-ssh-copy-id root@compute.example.com
-ssh-copy-id root@network.example.com
-```
-
-Let verify we can connect.
-
-```bash
-ssh root@compute.example.com
-```
-
-```bash
-ssh root@network.example.com
-```
-
-## 1.7 Network Time Protocol (NTP) Setup
+## 1.6 Network Time Protocol (NTP) Setup
 
 **On the Controller Node:**
 
@@ -139,53 +85,24 @@ systemctl enable chronyd.service
 systemctl start chronyd.service
 ```
 
-**On Compute and Network node:**
-
-```bash
-yum install chrony -y
-```
-
-Edit the /etc/chrony.conf file and configure the server:
-
-```
-server controller.example.com iburst
-```
-
-Start the NTP service and configure it to start when the system boots:
-
-```bash
-systemctl enable chronyd.service
-systemctl start chronyd.service
-```
-
-Verify:
-
-```bash
-chronyc sources
-210 Number of sources = 1
-MS Name/IP address         Stratum Poll Reach LastRx Last sample
-===============================================================================
-^? controller.example.com        0   6     0     -     +0ns[   +0ns] +/-    0ns
-```
-
-Update the hours on all Nodes:
+Update the hour:
 
 ```bash
 yum install ntpdate -y
 ntpdate -u 0.europe.pool.ntp.org
 ```
 
-## 1.8 Set OpenStack Newton Repository
+## 1.7 Set OpenStack Newton Repository
 
 **On all Nodes install:**
 
 ```bash
-yum install centos-release-openstack-newton -y
+yum install centos-release-openstack-pike -y
 yum update -y
 yum install python-openstackclient -y
 ```
 
-## 1.9 Install MariaDB
+## 1.8 Install MariaDB
 
 **On Controller node**
 
@@ -247,7 +164,7 @@ Permit configuration, write, and read access for the openstack user:
 rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 ```
 
-## 1.11 Memcached setup
+## 1.10 Memcached setup
 
 **On Controller node**
 
@@ -263,7 +180,7 @@ systemctl start memcached.service
 systemctl status memcached.service
 ```
 
-# 2 Services Configuratins
+# 2 Services Configurations
 
 ## 2.1.1 Installing Keystone
 
