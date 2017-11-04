@@ -98,7 +98,7 @@ ntpdate -u 0.europe.pool.ntp.org
 ```bash
 yum install centos-release-openstack-pike -y
 yum update -y
-yum install python-openstackclient -y
+yum install python-openstackclient openstack-selinux -y
 ```
 
 ## 1.8 Install MariaDB
