@@ -1304,9 +1304,23 @@ debug=False
 nova_metadata_ip=172.31.52.18
 ```
 
+Enable the services:
+
+```bash
+systemctl enable openvswitch.service
+systemctl enable neutron-openvswitch-agent.service
+systemctl enable neutron-ovs-cleanup.service
+systemctl enable neutron-dhcp-agent.service
+systemctl enable neutron-l3-agent.service
+systemctl enable neutron-metadata-agent.service
+```
+
 Restart the services:
 
 ```bash
+systemctl restart openstack-nova-compute.service
+systemctl restart libvirtd.service openstack-nova-compute.service
+
 systemctl restart openvswitch.service
 systemctl restart neutron-openvswitch-agent.service
 systemctl restart neutron-ovs-cleanup.service
@@ -1318,6 +1332,9 @@ systemctl restart neutron-metadata-agent.service
 Verify all is running fine:
 
 ```bash
+systemctl status openstack-nova-compute.service
+systemctl status libvirtd.service openstack-nova-compute.service
+
 systemctl status openvswitch.service
 systemctl status neutron-openvswitch-agent.service
 systemctl status neutron-ovs-cleanup.service
