@@ -996,18 +996,18 @@ Verify nova cell0 and cell1 are registered correctly:
 nova-manage cell_v2 list_cells
 ```
 
-Discover Compute Host:
-
-```bash
-su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
-```
-
 Start the Compute services and configure them to start when the system boots:
 
 ```bash
 systemctl enable openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
 systemctl restart openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
 systemctl status openstack-nova-api.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
+```
+
+Discover Compute Host:
+
+```bash
+su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
 ```
 
 Start the Compute service including its dependencies and configure them to start automatically when the system boots:
