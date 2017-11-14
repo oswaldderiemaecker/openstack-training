@@ -1010,6 +1010,12 @@ Discover Compute Host:
 su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
 ```
 
+Check discovered Hypervisor:
+
+```bash
+openstack hypervisor list
+```
+
 Start the Compute service including its dependencies and configure them to start automatically when the system boots:
 
 ```bash
