@@ -91,12 +91,12 @@ yum install ntpdate -y
 ntpdate -u 0.europe.pool.ntp.org
 ```
 
-## 1.7 Set OpenStack Pike Repository
+## 1.7 Set OpenStack Queens Repository
 
 **On all Nodes install:**
 
 ```bash
-yum install centos-release-openstack-pike -y
+yum install centos-release-openstack-queens -y
 yum update -y
 yum install python-openstackclient openstack-selinux -y
 ```
@@ -415,12 +415,15 @@ filesystem_store_datadir = /var/lib/glance/images/
 os_region_name=RegionOne
 
 [keystone_authtoken]
-auth_uri = http://controller.example.com:5000/v2.0
+auth_uri = http://controller:5000
+auth_url = http://controller:5000
+memcached_servers = controller:11211
 auth_type = password
-project_name=services
-username=glance
-password=rootroot
-auth_url=http://controller.example.com:35357
+project_domain_name = Default
+user_domain_name = Default
+project_name = services
+username = glance
+password = rootroot
 
 [oslo_policy]
 policy_file = /etc/glance/policy.json
@@ -444,12 +447,15 @@ log_dir = /var/log/glance
 connection = mysql+pymysql://glance:rootroot@controller.example.com/glance
 
 [keystone_authtoken]
-auth_uri = http://controller.example.com:5000/v2.0
+auth_uri = http://controller:5000
+auth_url = http://controller:5000
+memcached_servers = controller:11211
 auth_type = password
-username=glance
-project_name=services
-password=rootroot
-auth_url=http://controller.example.com:35357
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = glances
+password = rootroot
 
 [oslo_policy]
 policy_file = /etc/glance/policy.json
@@ -470,6 +476,8 @@ chown -R glance:glance /var/lib/glance/image-cache
 Populate the Image service database:
 
 ```bash
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
 su -s /bin/sh -c "glance-manage db_sync" glance
 ```
 
@@ -491,6 +499,7 @@ Now download the cirros source image:
 ```bash
 sudo yum -y install wget
 wget http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img  
+wget https://launchpad.net/cirros/trunk/0.3.0/+download/cirros-0.3.0-x86_64-disk.img
 ```
 
 Upload the image to the Image service using the QCOW2 disk format, bare container format, and public visibility so all projects can access it:
@@ -582,12 +591,15 @@ glance_host=controller.example.com
 connection = mysql+pymysql://cinder:rootroot@controller.example.com/cinder
 
 [keystone_authtoken]
-auth_uri = http://controller.example.com:5000
+auth_uri = http://controller:5000
+auth_url = http://controller:5000
+memcached_servers = controller:11211
 auth_type = password
-username=cinder
-auth_url=http://controller.example.com:35357
-project_name=services
-password=rootroot
+project_domain_id = default
+user_domain_id = default
+project_name = services
+username = cinder
+password = rootroot
 
 [oslo_concurrency]
 lock_path = /var/lib/cinder/tmp
@@ -865,12 +877,14 @@ weight_classes=nova.scheduler.weights.all_weighers
 api_servers=controller.example.com:9292
 
 [keystone_authtoken]
-auth_uri=http://controller.example.com:5000/
-auth_type=password
-auth_url=http://controller.example.com:35357
-username=nova
-password=rootroot
-project_name=services
+auth_url = http://controller:5000/v3
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = services
+username = nova
+password = rootroot
 
 [libvirt]
 virt_type=qemu
@@ -1704,7 +1718,7 @@ LOGGING = {
     'handlers': {
         'null': {
             'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+            'class': 'logging.NullHandler',
         },
         'console': {
 
