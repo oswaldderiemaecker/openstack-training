@@ -1,3 +1,5 @@
+**DEPRECATED - [Look at the new respository](https://github.com/oswaldderiemaecker/openstack-training-on-aws)**
+
 I am using the Mac for installation and have the VirtualBox installed.
 
 For the Newton openstack setup we must have the three virtual machine ready with atleast below requirement:
